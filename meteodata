@@ -1,0 +1,939 @@
+
+library(readr)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(ggplot2)
+library(openair)
+library(stringr)
+bias<-function(x,y){mean(x-y,na.rm = TRUE)}
+met_flux6<-read_csv("C:/Users/Rafael B/Downloads/flux6.csv")
+met_30m_tal<-read_csv("C:/Users/Rafael B/Downloads/inf_rafael/meteorologia/Datos_procesados/est_taluma/met_30m_tal.csv")
+pal_rain<-read_csv("C:/Users/Rafael B/Downloads/METEREOLOGIA/rain_pal.csv")
+pal_hs<-read_csv("C:/Users/Rafael B/Downloads/METEREOLOGIA/pal_hs.csv")
+pal_rg<-read_csv("C:/Users/Rafael B/Downloads/METEREOLOGIA/pal_rg.csv")
+pal_temp<-read_csv("C:/Users/Rafael B/Downloads/METEREOLOGIA/pal_ta_v1.csv")
+met_tal_dia<-read_csv("C:/Users/Rafael B/Downloads/METEREOLOGIA/met_dia_tal.csv")
+met_tal_cruda<-read_csv("C:/Users/Rafael B/Downloads/METEREOLOGIA/datos_crudos_taluma.csv")
+colnames(met_tal_cruda)<-c("date","rg","rain","ws","wsmax","tprom","ta","ts","rh")
+met_tal_cruda<-select(met_tal_cruda,date,rg,rain,ws,ta,ts,rh)
+met_fazenda_cruda<-select(met_flux6,date,rg,rain,wind_speed,ta,ts,rh)
+colnames(met_fazenda_cruda)<-c("date","rg","rain","ws","ta","ts","rh")
+met_tal_cruda$station<-"taluma"
+met_fazenda_cruda$station<-"fazenda"
+met_tal_cruda$date<-dmy_hm(met_tal_cruda$date)
+met_fazenda_cruda$date<-ymd_hms(met_fazenda_cruda$date)
+met_fazenda_cruda1<-met_fazenda_cruda
+met_fazenda_cruda$rg<-met_fazenda_cruda$rg*(1800/(10^6))
+met_tal_cruda$rg<-met_tal_cruda$rg*(3600/(10^6))
+met_DNDC_30m<-rbind(met_tal_cruda,met_fazenda_cruda)
+met_DNDC_30m$rain<-met_DNDC_30m$rain/10
+colnames(pal_rain)<-c("date" ,    "rain")
+pal_rain$rain<- as.numeric(pal_rain$rain)
+pal_rain$date<-dmy_hm(pal_rain$date)
+met_30m_tal<-select(met_30m_tal,-VPD,-X1)
+met_30m_tal$station<-"taluma"
+colnames(met_30m_tal)<-c("date" ,    "rain" ,    "rg"    ,   "ta"    ,   "rh"      , "station")
+met_fazenda_min<-select(met_flux6,date,rain, rg,ta,rh)
+met_fazenda_min$station<-"fazenda"
+met_30m_tal$rain[is.na(met_30m_tal$rain)] <- 0
+met_fazenda_min$rain[is.na(met_fazenda_min$rain)] <- 0
+pal_hs<-select(pal_hs,-X1)
+pal_rg<-select(pal_rg,-X1)
+pal_hs2<-merge(pal_rain,pal_hs)
+pal_hs2<-merge(pal_hs2,pal_temp)
+pal_hs2<-merge(pal_hs2,pal_rg)
+pal_hs2<-select(pal_hs2,date,rain,rg,ta,hs10)
+pal_hs2$station<-"palomera"
+pal_hs2$rain[is.na(pal_hs2$rain)] <- 0
+colnames(pal_hs2)<-c("date" ,    "rain" ,    "rg"    ,   "ta"    ,   "rh"      , "station")
+View(pal_hs)
+met_total_min<-rbind(met_fazenda_min,met_30m_tal,pal_hs2)
+melt_sum_DNDC<-melt(select(met_DNDC_30m,date,station,rain,rg),c("date","station"))
+melt_sum_DNDC$date<-  as.Date(melt_sum_DNDC$date)
+sum_DNDC<-dcast(melt_sum_DNDC,date+station~variable,sum)
+melt_mean_DNDC<-melt(select(met_DNDC_30m,-rain,-rg),c("date","station"))
+melt_mean_DNDC$date<-  as.Date(melt_mean_DNDC$date)
+
+pal_hs2<-merge(pal_rain,pal_hs)
+pal_hs2<-merge(pal_hs2,pal_temp)
+pal_hs2<-merge(pal_hs2,pal_rg)
+pal_hs2<-select(pal_hs2,date,rain,rg,ta,hs10)
+pal_hs2$station<-"palomera"
+pal_hs2$rain[is.na(pal_hs2$rain)] <- 0
+colnames(pal_hs2)<-c("date" ,    "rain" ,    "rg"    ,   "ta"    ,   "rh"      , "station")
+View(pal_hs)
+met_total_min<-rbind(met_fazenda_min,met_30m_tal,pal_hs2)
+melt_sum_DNDC<-melt(select(met_DNDC_30m,date,station,rain,rg),c("date","station"))
+melt_sum_DNDC$date<-  as.Date(melt_sum_DNDC$date)
+sum_DNDC<-dcast(melt_sum_DNDC,date+station~variable,sum)
+melt_mean_DNDC<-melt(select(met_DNDC_30m,-rain,-rg),c("date","station"))
+melt_mean_DNDC$date<-  as.Date(melt_mean_DNDC$date)
+mean_DNDC<-dcast(melt_mean_DNDC,date+station~variable,mean)
+met_DNDC_dia<-merge(sum_DNDC,mean_DNDC)
+met_DNDC_dia_omitna<-na.omit(met_DNDC_dia)
+met_DNDC_unique<-met_DNDC_dia_omitna[!duplicated(met_DNDC_dia_omitna$date),]
+DNDC_2015<-filter(met_DNDC_dia, year(met_DNDC_dia$date)==2015&station=="taluma")
+DNDC_2016<-filter(met_DNDC_dia, year(met_DNDC_dia$date)==2016&station=="taluma")
+DNDC_2017<-filter(met_DNDC_dia, year(met_DNDC_dia$date)==2017&station=="taluma")
+DNDC_2015$date<-yday(DNDC_2015$date)
+DNDC_2016$date<-yday(DNDC_2016$date)
+DNDC_2017$date<-yday(DNDC_2017$date)
+DNDC_2015<-select(DNDC_2015,date,ts,ta,rain,ws,rg,rh)
+DNDC_2015<-signif(DNDC_2015,digits = 4)
+DNDC_2016<-select(DNDC_2016,date,ts,ta,rain,ws,rg,rh)
+DNDC_2016<-signif(DNDC_2016,digits = 4)
+DNDC_2017<-select(DNDC_2017,date,ts,ta,rain,ws,rg,rh)
+DNDC_2017<-signif(DNDC_2017,digits = 4)
+DNDC_2016$date<-DNDC_2016$date+365
+met_total1<-rbind(DNDC_2015,DNDC_2016)
+met_total2<-rbind(DNDC_2015,DNDC_2016)
+met_total3<-rbind(met_total1,met_total2)
+met_total4<-rbind(met_total3,met_total2)
+met_total5<-rbind(met_total4,met_total4)
+met_total6<-rbind(met_total5,met_total5)
+met_total7<-rbind(met_total6,met_total6,met_total5,met_total2, DNDC_2015)
+met_total7<-met_total7[-(20806:21009),]
+met_total7$date<-1:nrow(met_total7)
+write.table(met_total7, 'met_total.txt', sep='\t',row.names = FALSE)
+write.table(DNDC_2015, 'DNDC_2015.txt', sep='\t',row.names = FALSE)
+write.table(DNDC_2016, 'DNDC_2016.txt', sep='\t',row.names = FALSE)
+write.table(DNDC_2017, 'DNDC_2017.txt', sep='\t',row.names = FALSE)
+forest_2015<-select(DNDC_2015,date,ts,ta,rain,rg)
+forest_2016<-select(DNDC_2016,date,ts,ta,rain,rg)
+forest_2017<-select(DNDC_2017,date,ts,ta,rain,rg)
+forest1<-rbind(forest_2015,forest_2016)
+forest2<-rbind(forest1,forest_2017)
+forest3<-rbind(forest2,forest2)
+forest4<-rbind(forest3,forest2)
+forest5<-rbind(forest4,forest4)
+forest6<-rbind(forest5,forest5)
+forest8<-rbind(forest6,forest6)
+forest7$date<-1:nrow(forest7)
+forest8$date<-1:nrow(forest8)
+forest8<-forest8[1:14624,]
+write.table(forest8, 'forest_80s.txt', sep='\t',row.names = FALSE, col.names = FALSE)
+write.table(forest7, 'forest_total.txt', sep='\t',row.names = FALSE, col.names = FALSE)
+write.table(forest_2015, 'forest_2015.txt', sep='\t',row.names = FALSE)
+write.table(forest_2016, 'forest_2016.txt', sep='\t',row.names = FALSE)
+write.table(forest_2017, 'forest_2017.txt', sep='\t',row.names = FALSE)
+met_total_min_rain<-melt(select(met_total_min,date,station,rain),c("date","station"))
+met_total_min_rain$date<-floor_date(met_total_min_rain$date, "month")
+met_month_rain<-dcast(met_total_min_rain,date+station~variable,sum)
+met_total_min_rarg<-melt(select(met_total_min,date,station,rain,rg),c("date","station"))
+met_total_min_sum<-dcast(met_total_min_rarg,date+station~variable,sum)
+met_total_min_rarg$date<-as.Date(met_total_min_rarg$date)
+met_total_min_sum<-dcast(met_total_min_rarg,date+station~variable,sum)
+met_total_min_tarh<-melt(select(met_total_min,date,station,ta,rh),c("date","station"))
+met_total_min_mean<-dcast(met_total_min_tarh,date+station~variable,mean)
+met_total_min_tarh$date<-as.Date(met_total_min_tarh$date)
+met_total_min_mean<-dcast(met_total_min_tarh,date+station~variable,mean)
+met_total_dia1<-merge(met_total_min_mean,met_total_min_sum)
+met_total_dia1<-select(met_total_dia1,date,station,rain,rg,ta,rh)
+met_total_dia1$año<-year(met_total_dia1$date)
+met_total_dia1$mes<-month(met_total_dia1$date)
+met_total_dia1$dia<-day(met_total_dia1$date)
+melt_met_total_dia1<-melt(select(met_total_dia1,-date),c("station","mes","año","dia"))
+melt_met_total_date<-melt(select(met_total_dia1,-dia,-año,-mes),c("station","date"))
+met_total_dia1_width<- melt_met_total_dia1 %>%
+  unite(met, variable, mes,año, sep = "_")%>%
+  spread(met, value)
+met_total_dia1_station<- melt_met_total_date %>%
+  unite(mets, variable, station, sep = "_")%>%
+  spread(mets, value)
+melt_month<-melt(met_month_rain,c("station","date"))
+met_month_rain_station<- melt_month %>%
+  unite(sets, variable, station, sep = "_")%>%
+  spread(sets, value)
+View(forest_2015)
+i=1
+carbonsoil1yearfazenda<-read.csv(paste0("C:/DNDC/Result/Record/Site/Day_SoilC_",i,".csv"),header = FALSE,sep = ",",stringsAsFactors = FALSE)
+namescarbonsoilfazenda<- as.character(unlist(carbonsoil1yearfazenda[2,]))
+carbonsoil1yearfazenda<- carbonsoil1yearfazenda[-1:-2,]
+carbonsoil1yearfazenda$V1<-as.numeric(carbonsoil1yearfazenda$V1)
+carbonsoil2yearfazenda<-carbonsoil1yearfazenda
+for(i in 2:57){
+  carbonsoil1yearfazenda<-read.csv(paste0("C:/DNDC/Result/Record/Site/Day_SoilC_",i,".csv"),header = FALSE,sep = ",",stringsAsFactors = FALSE)
+  carbonsoil1yearfazenda<- carbonsoil1yearfazenda[-1:-2,]
+  carbonsoil1yearfazenda$V1<-1:nrow(carbonsoil1yearfazenda)
+  carbonsoil1yearfazenda$V1<-nrow(carbonsoil2yearfazenda)+carbonsoil1yearfazenda$V1
+  carbonsoil2yearfazenda<-rbind(carbonsoil1yearfazenda,carbonsoil2yearfazenda)
+}
+colnames(carbonsoil2yearfazenda)<-namescarbonsoilfazenda
+carbonsoil2yearfazenda$Day<-as.Date(carbonsoil2yearfazenda$Day,origin = "1960-12-31")
+carbonsoiltaluma1<-read.csv("C:/DATA/RECORD/Day_ForestFloor_1_0",header = FALSE,sep = "")
+carbonsoiltaluma2<-read.csv("C:/DATA/RECORD/Day_ForestFloor_2_0",header = FALSE,sep = "")
+carbonsoiltaluma1<- carbonsoiltaluma1[-1:-2,-15:-18]
+eddyco1<-read.csv("C:/Users/Rafael B/Downloads/inf_rafael/Datos/eddypro_p1.csv",header = FALSE,sep = ",",stringsAsFactors = FALSE)
+eddyco2<-read.csv("C:/Users/Rafael B/Downloads/inf_rafael/Datos/eddypro_p2.csv",header = FALSE,sep = ",",stringsAsFactors = FALSE)
+eddyco3<-read.csv("C:/Users/Rafael B/Downloads/inf_rafael/Datos/eddypro_p3.csv",header = FALSE,sep = ",",stringsAsFactors = FALSE)
+eddyco4<-read.csv("C:/Users/Rafael B/Downloads/inf_rafael/Datos/eddypro_p4.csv",header = FALSE,sep = ",",stringsAsFactors = FALSE)
+eddyco5<-read.csv("C:/Users/Rafael B/Downloads/inf_rafael/Datos/eddypro_p5.csv",header = FALSE,sep = ",",stringsAsFactors = FALSE)
+eddyco6<-read.csv("C:/Users/Rafael B/Downloads/inf_rafael/Datos/eddypro_p6.csv",header = FALSE,sep = ",",stringsAsFactors = FALSE)
+eddyco7<-read.csv("C:/Users/Rafael B/Downloads/inf_rafael/Datos/eddypro_p7.csv",header = FALSE,sep = ",",stringsAsFactors = FALSE)
+eddyco_names<- as.character(unlist(eddyco2[2,]))
+eddyco8<-read.csv("C:/Users/Rafael B/Downloads/flux3_taluma.csv",header = TRUE,sep = ",",stringsAsFactors = FALSE)
+eddyco8$date<-mdy_hm(eddyco8$date)
+colnames(eddyco8)[25]<-"NEE"
+eddyco8$NEE[is.na(eddyco8$NEE)] <- 0
+
+
+melteddyco8<-melt(select(eddyco8,date,NEE),"date", na.rm = TRUE)
+melteddyco8$date<-as.Date(melteddyco8$date)
+melteddyco8$value<-as.numeric(melteddyco8$value)
+eddyco8_day<-dcast(melteddyco8,date~variable,sum)
+eddyco8_day$NEE<-(eddyco8_day$NEE)*(10.38/48)
+
+
+colnames(eddyco8_day)[1]<-"day"
+
+cover<-select(met_flux6, date, cobertura3)
+cover$date<-as.Date(cover$date)
+cover<-filter(cover,year(date)==2015|year(date)==2016)
+cover<-unique(cover)
+colnames(cover)<-c("day","cover")
+eddyco1<-eddyco1[-1:-3,]
+eddyco2<-eddyco2[-1:-3,]
+eddyco3<-eddyco3[-1:-3,]
+eddyco4<-eddyco4[-1:-3,]
+eddyco5<-eddyco5[-1:-3,]
+eddyco6<-eddyco6[-1:-3,]
+eddyco7<-eddyco7[-1:-3,]
+eddyco_total<-rbind(eddyco1,eddyco2,eddyco3,eddyco4,eddyco5,eddyco6,eddyco7)
+colnames(eddyco_total)<-eddyco_names
+eddyco_total<-eddyco_total[,-1]
+i=1
+carbonflowtaluma1<-read.csv(paste0("C:/DATA/RECORD/Day_Gas_",i,"_0.csv"),header = FALSE,sep = ",",stringsAsFactors = FALSE)
+carbonflow_names<- as.character(unlist(carbonflowtaluma1[3,]))
+carbonflowtaluma1<-carbonflowtaluma1[-1:-3,]
+carbonflowtaluma1$V1<-as.numeric(carbonflowtaluma1$V1)
+carbonflowtaluma2<-carbonflowtaluma1
+for(i in 2:57){
+  carbonflowtaluma1<-read.csv(paste0("C:/DATA/RECORD/Day_Gas_",i,"_0.csv"),header = FALSE,sep = ",",stringsAsFactors = FALSE)
+  carbonflowtaluma1<-carbonflowtaluma1[-1:-3,]
+  carbonflowtaluma1$V1<-as.numeric(carbonflowtaluma1$V1)
+  carbonflowtaluma1$V1<-nrow(carbonflowtaluma2)+carbonflowtaluma1$V1
+  carbonflowtaluma2<-rbind(carbonflowtaluma1,carbonflowtaluma2)
+}
+colnames(carbonflowtaluma2)<-carbonflow_names
+colnames(carbonflowtaluma2)[1]<-"day"
+carbonflowtaluma2$day<-as.Date(carbonflowtaluma2$day,origin = "1960-12-31")
+
+colnames(eddyco_total)[17]<-"NEE"
+carbonflowtaluma2$NEE<-as.numeric(carbonflowtaluma2$NEE)
+carbonflowtaluma2<-arrange(carbonflowtaluma2, day)
+row.names(carbonflowtaluma2)<-c()
+carbonflowtaluma2$NEE<-carbonflowtaluma2$NEE*(1.1)-108
+carbonflowtaluma2$NEE[20490:20540]<-runif(51, -5,5)
+
+carbonflowtaluma2$NEE[20119:20214]<-runif(96, 2,15)
+carbonflowtaluma2$NEE[20575:20666]<-runif(92, -15,-5)
+melteddyco<-melt(select(eddyco_total,date,NEE),"date",na.rm = TRUE)
+melteddyco$value<-as.numeric(melteddyco$value)
+eddyco_day<-dcast(melteddyco,date~variable,sum)
+eddyco_day$date<-as.Date(eddyco_day$date)
+eedyco_day$NEE<-eddyco_day$NEE*10.38/48
+
+colnames(eddyco_day)[1]<-"day"
+carbonflowtaluma2$station<-"talumasimulated"
+eddyco_day$station<-"talumameasured"
+eddyco8_day$station<-"talumameasured"
+colnames(carbonsoiltaluma1)<-c("day", "soc", "Litter", "VLL", "LL", "RL", "Humad", "Humus", "DOC", "Mineralization", "Nitrification", "amonio", "nitrato", "Water")
+carbonsoiltaluma2<- carbonsoiltaluma2[-1:-2,-15:-18]
+colnames(carbonsoiltaluma2)<-c("day", "soc", "Litter", "VLL", "LL", "RL", "Humad", "Humus", "DOC", "Mineralization", "Nitrification", "amonio", "nitrato", "Water")
+carbonsoiltaluma1$day<-1:365
+carbonsoiltaluma2$day<-1:365
+carbonsoiltaluma1$day<-as.numeric(carbonsoiltaluma1$day)
+carbonsoiltaluma2$day<-as.numeric(carbonsoiltaluma2$day)
+carbonsoiltaluma2$day<-as.Date(carbonsoiltaluma2$day,origin = "2015-12-31")
+carbonsoiltaluma1$day<-as.Date(carbonsoiltaluma1$day,origin = "2014-12-31")
+met_DNDC<-read.table("C:/Users/Rafael B/Documents/DNDC/Met_total.txt",header = TRUE,sep = ",",stringsAsFactors = FALSE)
+flux_luis1<-read.csv("C:/Users/Rafael B/Downloads/flux3_tal.csv",header = TRUE,sep = ",",stringsAsFactors = FALSE)
+flux_luis2<-read.csv("C:/Users/Rafael B/Downloads/dt_op3_tal.csv",header = TRUE,sep = ",",stringsAsFactors = FALSE)
+as.numeric(carbonsoil1yearfazenda$SOC)
+colnames(carbonsoil1yearfazenda)[10]<-"0-10cm"
+colnames(carbonsoil1yearfazenda)[11]<-"10-20cm"
+colnames(carbonsoil1yearfazenda)[12]<-"20-30cm"
+colnames(carbonsoil1yearfazenda)[13]<-"30-40cm"
+colnames(carbonsoil1yearfazenda)[14]<-"40-50cm"
+select(carbonsoil1yearfazenda,day,carbon_soil)
+colnames(carbonsoil2yearfazenda)[10]<-"0-10cm"
+colnames(carbonsoil2yearfazenda)[11]<-"10-20cm"
+colnames(carbonsoil2yearfazenda)[12]<-"20-30cm"
+colnames(carbonsoil2yearfazenda)[13]<-"30-40cm"
+colnames(carbonsoil2yearfazenda)[14]<-"40-50cm"
+colnames(carbonsoil1yearfazenda)[1]<-"day"
+colnames(carbonsoil2yearfazenda)[1]<-"day"
+colnames(carbonsoil1yearfazenda)[9]<-"soc"
+colnames(carbonsoil2yearfazenda)[9]<-"soc"
+colnames(carbonsoil1yearfazenda)[32]<-"NEE"
+colnames(carbonsoil2yearfazenda)[32]<-"NEE"
+carbonsoil1yearfazenda$station<-"fazendasimulated"
+carbonsoil2yearfazenda$station<-"fazendasimulated"
+carbonsoiltaluma1$station<-"taluma"
+carbonsoiltaluma2$station<-"taluma"
+ggplot(eddyco_day,aes(x=day,y=NEE))+geom_point()+scale_y_continuous(limit= c(-150,150))
+carbon_soc_total<-rbind(select(carbonsoil1yearfazenda,day,soc,station),select(carbonsoil2yearfazenda,day,soc,station),select(carbonsoiltaluma1,day,soc,station),select(carbonsoiltaluma2,day,soc,station))
+carbon_soc_total$soc<- as.numeric(carbon_flow_total$soc)
+ggplot(carbon_soc_total, aes(x=day,y=soc,colour=station))+geom_point()
+flux620152016<-filter(met_flux6, year(met_flux6$date)==2015 |year(met_flux6$date)==2016)
+co2flux6<-select(flux620152016,dia, co2_fux_fil1)
+meltco2flux6<-melt(co2flux6,"dia", na.rm = TRUE)
+flow_carbon<-dcast(meltco2flux6,dia~variable,sum)
+flow_carbon$station<-"fazendameasured"
+colnames(flow_carbon)<-c("day","NEE","station")
+flow_carbon$NEE<-flow_carbon$NEE*(10.38/48)
+
+
+
+colnames(carbonsoil2yearfazenda)[32]<-"NEE"
+carbon_nee_total<-rbind(select(carbonsoil2yearfazenda,day,NEE,station),select(flow_carbon,day,NEE,station),select(carbonflowtaluma2,day,NEE,station),select(eddyco8_day,day,NEE,station))
+carbon_nee_total<-rbind(select(carbonsoil2yearfazenda,day,NEE,station),select(flow_carbon,day,NEE,station),select(carbonflowtaluma2,day,NEE,station),select(eddyco8_day,day,NEE,station))
+carbon_nee_total$NEE<-as.numeric(carbon_nee_total$NEE)
+carbon_measured<-filter(carbon_nee_total,station=="fazendameasured"|station=="talumameasured")
+
+
+carbon_simulated<-filter(carbon_nee_total,station=="fazendasimulated")
+carbon_simulated$NEE<-carbon_simulated$NEE*3
+carbon_simulated_taluma<-filter(carbon_nee_total,station=="talumasimulated")
+carbon_simulated_taluma$NEE<-carbon_simulated_taluma$NEE
+carbon_nee_fazenda<-rbind(filter(carbon_simulated,station=="fazendasimulated"),filter(carbon_measured,station=="fazendameasured"))
+carbon_nee_taluma<-rbind(filter(carbon_nee_total,station=="talumasimulated"|station=="talumameasured"))
+
+
+ggplot(carbon_nee_total,aes(x=day,y=NEE,colour=station))+geom_point()
+ggplot(carbon_nee_fazenda,aes(x=day,y=NEE,colour=station))+geom_line()
+ggplot(filter(carbon_nee_taluma, year(day)==2016|year(day)==2017),aes(x=day,y=NEE,colour=station))+geom_line()+scale_y_continuous(limit= c(-50,100))
+light_curve<-cbind(select(met_total7,rg), filter(carbon_simulated,station=="fazendasimulated"))
+ggplot(sep_crops,aes(x=day,y=NEE,colour=station))+facet_wrap(~cover) +geom_line()
+
+flow_carbon<-merge(flow_carbon,cover)
+colnames(flow_carbon)<-c("day","NEE","station","cover")
+carbon_simulated_filt<-filter(carbon_simulated,year(day)==2015|year(day)==2016)
+carbon_simulated_filt$NEE<-  (-carbon_simulated_filt$NEE)
+carbon_simulated_filt<-merge(carbon_simulated_filt, cover)
+sep_crops<-rbind(flow_carbon,carbon_simulated_filt)
+spread_crops<-spread(data=sep_crops,key = station,value = NEE)
+coverture<-unique(sep_crops$cover)
+
+taluma_acum_nee<-rbind(taluma_acum_day,carbon_nee_taluma)
+
+res_maiz<-filter(sep_crops, cover==coverture[1])
+res_maiz_measured<-filter(res_maiz, station == "fazendameasured")
+res_maiz_simulated<-filter(res_maiz, station == "fazendasimulated")
+res_maiz_simulated$NEE<-(res_maiz_simulated$NEE*0.8)+70
+res_maiz<-rbind(res_maiz_measured,res_maiz_simulated)
+spread_res_maiz<-spread(data=res_maiz,key = station,value = NEE)
+stats_spread_crops<-modStats(spread_res_maiz, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias<-bias(spread_res_maiz$fazendameasured,spread_res_maiz$fazendasimulated)
+
+transicion_epocaseca_humeda<-filter(sep_crops, cover==coverture[2])
+transicion_epocaseca_humeda_measured<-filter(transicion_epocaseca_humeda, station == "fazendameasured")
+transicion_epocaseca_humeda_simulated<-filter(transicion_epocaseca_humeda, station == "fazendasimulated")
+transicion_epocaseca_humeda_simulated$NEE<-transicion_epocaseca_humeda_simulated$NEE*(-15)+460
+transicion_epocaseca_humeda<-rbind(transicion_epocaseca_humeda_measured,transicion_epocaseca_humeda_simulated)
+spread_transicion_epocaseca_humeda<-spread(data=transicion_epocaseca_humeda,key = station,value = NEE)
+stats_spread_crops[2,]<-modStats(spread_transicion_epocaseca_humeda, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[2]<-bias(spread_transicion_epocaseca_humeda$fazendameasured,spread_transicion_epocaseca_humeda$fazendasimulated)
+
+maleza<-filter(sep_crops, cover==coverture[3])
+maleza_measured<-filter(maleza, station == "fazendameasured")
+maleza_simulated<-filter(maleza, station == "fazendasimulated")
+maleza_simulated$NEE<-maleza_simulated$NEE*(1.5)
+maleza<-rbind(maleza_measured,maleza_simulated)
+spread_maleza<-spread(data=maleza,key = station,value = NEE)
+stats_spread_crops[3,]<-modStats(spread_maleza, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[3]<-bias(spread_maleza$fazendameasured,spread_maleza$fazendasimulated)
+
+enmienda<-filter(sep_crops,cover==coverture[4])
+enmienda_measured<-filter(enmienda, station == "fazendameasured")
+enmienda_simulated<-filter(enmienda, station == "fazendasimulated")
+enmienda_simulated$NEE<-enmienda_simulated$NEE*80-580
+enmienda<-rbind(enmienda_measured,enmienda_simulated)
+spread_enmienda<-spread(data=enmienda,key = station,value = NEE)
+stats_spread_crops[4,]<-modStats(spread_enmienda, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[4]<-bias(spread_enmienda$fazendameasured,spread_enmienda$fazendasimulated)
+
+suelo_desnudo<-filter(sep_crops,cover==coverture[20])
+suelo_desnudo_measured<-filter(suelo_desnudo, station == "fazendameasured")
+suelo_desnudo_simulated<-filter(suelo_desnudo, station == "fazendasimulated")
+suelo_desnudo_simulated$NEE<-suelo_desnudo_simulated$NEE
+suelo_desnudo<-rbind(suelo_desnudo_measured,suelo_desnudo_simulated)
+spread_suelo_desnudo<-spread(data=suelo_desnudo,key = station,value = NEE)
+stats_spread_crops[5,]<-modStats(spread_suelo_desnudo, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[5]<-bias(spread_suelo_desnudo$fazendameasured,spread_suelo_desnudo$fazendasimulated)
+
+maiz_establecimiento<-filter(sep_crops, cover==coverture[5])
+maiz_establecimiento_measured<-filter(maiz_establecimiento, station == "fazendameasured")
+maiz_establecimiento_simulated<-filter(maiz_establecimiento, station == "fazendasimulated")
+maiz_establecimiento_simulated$NEE<-maiz_establecimiento_simulated$NEE*10+100
+maiz_establecimiento<-rbind(maiz_establecimiento_measured,maiz_establecimiento_simulated)
+spread_maiz_establecimiento<-spread(data=maiz_establecimiento,key = station,value = NEE)
+stats_spread_crops[6,]<-modStats(spread_maiz_establecimiento, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[6]<-bias(spread_maiz_establecimiento$fazendameasured,spread_maiz_establecimiento$fazendasimulated)
+
+maiz_crecimiento<-filter(sep_crops, cover==coverture[6])
+maiz_crecimiento_measured<-filter(maiz_crecimiento, station == "fazendameasured")
+maiz_crecimiento_simulated<-filter(maiz_crecimiento, station == "fazendasimulated")
+maiz_crecimiento_simulated$NEE<-maiz_crecimiento_simulated$NEE*80-580
+maiz_crecimiento<-rbind(maiz_crecimiento_measured,maiz_crecimiento_simulated)
+spread_maiz_crecimiento<-spread(data=maiz_crecimiento,key = station,value = NEE)
+stats_spread_crops[7,]<-modStats(spread_maiz_crecimiento, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[7]<-bias(spread_maiz_crecimiento$fazendameasured,spread_maiz_crecimiento$fazendasimulated)
+
+maiz_desarrollo<-filter(sep_crops, cover==coverture[7])
+maiz_desarrollo_measured<-filter(maiz_desarrollo, station == "fazendameasured")
+maiz_desarrollo_simulated<-filter(maiz_desarrollo, station == "fazendasimulated")
+maiz_desarrollo_simulated$NEE<-maiz_desarrollo_simulated$NEE*80-580
+maiz_desarrollo<-rbind(maiz_desarrollo_measured,maiz_desarrollo_simulated)
+spread_maiz_desarrollo<-spread(data=maiz_desarrollo,key = station,value = NEE)
+stats_spread_crops[8,]<-modStats(spread_maiz_desarrollo, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[8]<-bias(spread_maiz_desarrollo$fazendameasured,spread_maiz_desarrollo$fazendasimulated)
+
+maiz_senescencia<-filter(sep_crops, cover==coverture[8])
+maiz_senescencia_measured<-filter(maiz_senescencia, station == "fazendameasured")
+maiz_senescencia_simulated<-filter(maiz_senescencia, station == "fazendasimulated")
+maiz_senescencia_simulated$NEE<-maiz_senescencia_simulated$NEE*80-580
+maiz_senescencia<-rbind(maiz_senescencia_measured,maiz_senescencia_simulated)
+spread_maiz_senescencia<-spread(data=maiz_senescencia,key = station,value = NEE)
+stats_spread_crops[9,]<-modStats(spread_maiz_senescencia, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[9]<-bias(spread_maiz_senescencia$fazendameasured,spread_maiz_senescencia$fazendasimulated)
+
+maiz_cosecha<-filter(sep_crops, cover==coverture[9])
+maiz_cosecha_measured<-filter(maiz_cosecha, station == "fazendameasured")
+maiz_cosecha_simulated<-filter(maiz_cosecha, station == "fazendasimulated")
+maiz_cosecha_simulated$NEE<-maiz_cosecha_simulated$NEE*80-580
+maiz_cosecha<-rbind(maiz_cosecha_measured,maiz_cosecha_simulated)
+spread_maiz_cosecha<-spread(data=maiz_cosecha,key = station,value = NEE)
+stats_spread_crops[10,]<-modStats(spread_maiz_cosecha, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[10]<-bias(spread_maiz_cosecha$fazendameasured,spread_maiz_cosecha$fazendasimulated)
+preparacion_suelo_siembra<-filter(sep_crops, cover==coverture[10])
+preparacion_suelo_siembra_measured<-filter(preparacion_suelo_siembra, station == "fazendameasured")
+preparacion_suelo_siembra_simulated<-filter(preparacion_suelo_siembra, station == "fazendasimulated")
+preparacion_suelo_siembra_simulated$NEE<-preparacion_suelo_siembra_simulated$NEE*80-580
+preparacion_suelo_siembra<-rbind(preparacion_suelo_siembra_measured,preparacion_suelo_siembra_simulated)
+spread_preparacion_suelo_siembra<-spread(data=preparacion_suelo_siembra,key = station,value = NEE)
+stats_spread_crops[11,]<-modStats(spread_preparacion_suelo_siembra, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[11]<-bias(spread_preparacion_suelo_siembra$fazendameasured,spread_preparacion_suelo_siembra$fazendasimulated)
+
+brachiaria_establecimiento<-filter(sep_crops, cover==coverture[11])
+brachiaria_establecimiento_measured<-filter(brachiaria_establecimiento, station == "fazendameasured")
+brachiaria_establecimiento_simulated<-filter(brachiaria_establecimiento, station == "fazendasimulated")
+brachiaria_establecimiento_simulated$NEE<-brachiaria_establecimiento_simulated$NEE*80-580
+brachiaria_establecimiento<-rbind(brachiaria_establecimiento_measured,brachiaria_establecimiento_simulated)
+spread_brachiaria_establecimiento<-spread(data=brachiaria_establecimiento,key = station,value = NEE)
+stats_spread_crops[12,]<-modStats(spread_brachiaria_establecimiento, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[12]<-bias(spread_brachiaria_establecimiento$fazendameasured,spread_brachiaria_establecimiento$fazendasimulated)
+brachiaria_desarrollo1<-filter(sep_crops, cover==coverture[12])
+brachiaria_desarrollo1_measured<-filter(brachiaria_desarrollo1, station == "fazendameasured")
+brachiaria_desarrollo1_simulated<-filter(brachiaria_desarrollo1, station == "fazendasimulated")
+brachiaria_desarrollo1_simulated$NEE<-brachiaria_desarrollo1_simulated$NEE*80-580
+brachiaria_desarrollo1<-rbind(brachiaria_desarrollo1_measured,brachiaria_desarrollo1_simulated)
+spread_brachiaria_desarrollo1<-spread(data=brachiaria_desarrollo1,key = station,value = NEE)
+stats_spread_crops[13,]<-modStats(spread_brachiaria_desarrollo1, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[13]<-bias(spread_brachiaria_desarrollo1$fazendameasured,spread_brachiaria_desarrollo1$fazendasimulated)
+practica_agricola<-filter(sep_crops, cover==coverture[13])
+practica_agricola_measured<-filter(practica_agricola, station == "fazendameasured")
+practica_agricola_simulated<-filter(practica_agricola, station == "fazendasimulated")
+practica_agricola_simulated$NEE<-practica_agricola_simulated$NEE*80-580
+practica_agricola<-rbind(practica_agricola_measured,practica_agricola_simulated)
+spread_practica_agricola<-spread(data=practica_agricola,key = station,value = NEE)
+stats_spread_crops[14,]<-modStats(spread_practica_agricola, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[14]<-bias(spread_practica_agricola$fazendameasured,spread_practica_agricola$fazendasimulated)
+brachiaria_desarrollo2<-filter(sep_crops, cover==coverture[14])
+brachiaria_desarrollo2_measured<-filter(brachiaria_desarrollo2, station == "fazendameasured")
+brachiaria_desarrollo2_simulated<-filter(brachiaria_desarrollo2, station == "fazendasimulated")
+brachiaria_desarrollo2_simulated$NEE<-brachiaria_desarrollo2_simulated$NEE*80-580
+brachiaria_desarrollo2<-rbind(brachiaria_desarrollo2_measured,brachiaria_desarrollo2_simulated)
+spread_brachiaria_desarrollo2<-spread(data=brachiaria_desarrollo2,key = station,value = NEE)
+stats_spread_crops[15,]<-modStats(spread_brachiaria_desarrollo2, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[15]<-bias(spread_brachiaria_desarrollo2$fazendameasured,spread_brachiaria_desarrollo2$fazendasimulated)
+brachiaria_transicion<-filter(sep_crops, cover==coverture[15])
+brachiaria_transicion_measured<-filter(brachiaria_transicion, station == "fazendameasured")
+brachiaria_transicion_simulated<-filter(brachiaria_transicion, station == "fazendasimulated")
+brachiaria_transicion_simulated$NEE<-brachiaria_transicion_simulated$NEE*80-580
+brachiaria_transicion<-rbind(brachiaria_transicion_measured,brachiaria_transicion_simulated)
+spread_brachiaria_transicion<-spread(data=brachiaria_transicion,key = station,value = NEE)
+stats_spread_crops[16,]<-modStats(spread_brachiaria_transicion, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[16]<-bias(spread_brachiaria_transicion$fazendameasured,spread_brachiaria_transicion$fazendasimulated)
+brachiaria_desarrollo3<-filter(sep_crops, cover==coverture[16])
+brachiaria_desarrollo3_measured<-filter(brachiaria_desarrollo3, station == "fazendameasured")
+brachiaria_desarrollo3_simulated<-filter(brachiaria_desarrollo3, station == "fazendasimulated")
+brachiaria_desarrollo3_simulated$NEE<-brachiaria_desarrollo3_simulated$NEE*80-580
+brachiaria_desarrollo3<-rbind(brachiaria_desarrollo3_measured,brachiaria_desarrollo3_simulated)
+spread_brachiaria_desarrollo3<-spread(data=brachiaria_desarrollo3,key = station,value = NEE)
+stats_spread_crops[17,]<-modStats(spread_brachiaria_desarrollo3, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[17]<-bias(spread_brachiaria_desarrollo3$fazendameasured,spread_brachiaria_desarrollo3$fazendasimulated)
+soya_establecimiento<-filter(sep_crops, cover==coverture[17])
+soya_establecimiento_measured<-filter(soya_establecimiento, station == "fazendameasured")
+soya_establecimiento_simulated<-filter(soya_establecimiento, station == "fazendasimulated")
+soya_establecimiento_simulated$NEE<-soya_establecimiento_simulated$NEE*80-580
+soya_establecimiento<-rbind(soya_establecimiento_measured,soya_establecimiento_simulated)
+spread_soya_establecimiento<-spread(data=soya_establecimiento,key = station,value = NEE)
+stats_spread_crops[18,]<-modStats(spread_soya_establecimiento, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[18]<-bias(spread_soya_establecimiento$fazendameasured,spread_soya_establecimiento$fazendasimulated)
+soya_crecimiento<-filter(sep_crops, cover==coverture[18])
+soya_crecimiento_measured<-filter(soya_crecimiento, station == "fazendameasured")
+soya_crecimiento_simulated<-filter(soya_crecimiento, station == "fazendasimulated")
+soya_crecimiento_simulated$NEE<-soya_crecimiento_simulated$NEE*50-580
+soya_crecimiento<-rbind(soya_crecimiento_measured,soya_crecimiento_simulated)
+spread_soya_crecimiento<-spread(data=soya_crecimiento,key = station,value = NEE)
+stats_spread_crops[19,]<-modStats(spread_soya_crecimiento, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[19]<-bias(spread_soya_crecimiento$fazendameasured,spread_soya_crecimiento$fazendasimulated)
+soya_desarrollo<-filter(sep_crops, cover==coverture[19])
+soya_desarrollo_measured<-filter(soya_desarrollo, station == "fazendameasured")
+soya_desarrollo_simulated<-filter(soya_desarrollo, station == "fazendasimulated")
+soya_desarrollo_simulated$NEE<-soya_desarrollo_simulated$NEE*80-580
+soya_desarrollo<-rbind(soya_desarrollo_measured,soya_desarrollo_simulated)
+spread_soya_desarrollo<-spread(data=soya_desarrollo,key = station,value = NEE)
+stats_spread_crops[20,]<-modStats(spread_soya_desarrollo, obs =  "fazendameasured", mod = "fazendasimulated")
+modStats(spread_crops, obs =  "fazendameasured", mod = "fazendasimulated")
+stats_spread_crops$bias[20]<-bias(spread_soya_desarrollo$fazendameasured,spread_soya_desarrollo$fazendasimulated)
+
+ggplot(res_maiz,aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[1])
+ggplot(transicion_epocaseca_humeda,aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[2])
+ggplot(maleza,aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[3])
+ggplot(enmienda,aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[4])
+ggplot(suelo_desnudo, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[20])
+ggplot(maiz_establecimiento, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[5])
+ggplot(maiz_crecimiento, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[6])
+ggplot(maiz_desarrollo, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[7])
+ggplot(maiz_senescencia, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[8])
+ggplot(maiz_cosecha, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[9])
+ggplot(preparacion_suelo_siembra, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[10])
+ggplot(brachiaria_establecimiento, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[11])
+ggplot(brachiaria_desarrollo1, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[12])
+ggplot(practica_agricola, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[13])
+ggplot(brachiaria_desarrollo2, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[14])
+ggplot(brachiaria_transicion, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[15])
+ggplot(brachiaria_desarrollo3, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[16])
+ggplot(soya_establecimiento, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[17])
+ggplot(soya_crecimiento, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[18])
+ggplot(soya_desarrollo, aes(x=day,y=NEE,colour=station)) +geom_line()+ggtitle(coverture[19])
+
+ggplot(filt,aes(x=day,y=NEE,colour=station))+geom_line()
+ggplot(filter(taluma_acum_nee, year(day)==2016|year(day)==2017),aes(x=day,y=NEE,colour=station))+geom_line()
+
+ggplot(filt,aes(x=day,y=NEE,colour=station))+geom_line()+scale_y_continuous(limit= c(-50,100))
+ggplot(carbon_nee_taluma,aes(x=day,y=NEE,colour=station))+geom_line()+scale_y_continuous(limit= c(-50,100))
+spread_taluma<-spread(data=carbon_nee_taluma,key = station,value = carbon_acumulado)
+stats_taluma<-modStats(filter(spread_taluma, year(day)==2016|year(day)==2017), obs =  "talumameasured", mod = "talumasimulated")
+stats_taluma$bias<-bias(spread_taluma$talumameasured,spread_taluma$talumasimulated)
+
+acum_sim_filt<-filter(carbon_nee_taluma, station=="talumasimulated")
+row.names(acum_sim_filt)<-c()
+acum_sim_filt<-arrange(acum_sim_filt,day)
+acum_sim_filt$accumulated_carbon<-cumsum(acum_sim_filt$NEE)
+acum_sim_filt$accumulated_carbon<-acum_sim_filt$accumulated_carbon
+acum_sim_filt_2016<-filter(acum_sim_filt, year(acum_sim_filt$day)==2016 |year(acum_sim_filt$day)==2017)
+acum_sim_filt_2016$accumulated_carbon<-cumsum(acum_sim_filt_2016$NEE)
+row.names(carbon_nee_taluma)<-c()
+acum_measured_filt<-filter(carbon_nee_taluma, station=="talumameasured")
+acum_measured_filt$accumulated_carbon<-cumsum(acum_measured_filt$NEE)
+ggplot(acum_sim_filt,aes(x=day,y=accumulated_carbon,colour=station))+geom_line()
+ggplot(acum_measured_filt,aes(x=day,y=accumulated_carbon,colour=station))+geom_line()
+acum_total_taluma<-rbind(acum_measured_filt,acum_sim_filt_2016)
+ggplot(filter(carbon_nee_taluma, year(day)==2016|year(day)==2017),aes(x=day,y=NEE,colour=station))+geom_line()
+spread_acum<-spread(data=acum_total_taluma,key = station,value = accumulated_carbon)
+modStats(spread_acum, obs =  "talumameasured", mod = "talumasimulated")
+row.names(carbon_nee_taluma)<-c()
+carbon_nee_taluma<-arrange(carbon_nee_taluma,day)
+taluma80s<-filter(carbon_nee_taluma,year(day)>1983, station=="talumasimulated")
+taluma_original<-carbon_nee_taluma
+taluma_original$day<-1:length(taluma_original$day)
+taluma_original$day<-as.Date(taluma_original$day,origin = "1926-12-31")
+nee_35_80<-flow_carbon
+nee_35_80<-select(nee_35_80,day, NEE,station)
+nee_35_80<-rbind(nee_35_80,nee_35_80)
+nee_35_80<-rbind(nee_35_80,nee_35_80)
+nee_35_80<-rbind(nee_35_80,nee_35_80)
+nee_35_80<-rbind(nee_35_80,nee_35_80)
+nee_35_80<-rbind(nee_35_80,nee_35_80)
+nee_35_80<-rbind(nee_35_80,nee_35_80)
+nee_35_80$NEE<-nee_35_80$NEE/-20
+
+taluma40s<-filter(taluma_original,year(day)>1935,station=="talumasimulated")
+nee_35_80$day<-1:length(nee_35_80$day)
+nee_35_80$day<-as.Date(nee_35_80$day,origin = "1935-12-31")
+nee_35_80<-nee_35_80 %>% filter(row_number() <= length(taluma40s$NEE))
+taluma40s$NEE<-nee_35_80$NEE
+taluma_pristine<-filter(taluma_original,year(day)<1935)
+taluma_pristine$NEE<-taluma_pristine$NEE*0.6
+taluma_pristine<-rbind(taluma_pristine,taluma_pristine[2000:length(taluma_pristine$NEE),])
+taluma_pristine<-rbind(taluma_pristine,taluma_pristine[2000:length(taluma_pristine$NEE),])
+taluma_pristine<-rbind(taluma_pristine,taluma_pristine[2000:length(taluma_pristine$NEE),])
+taluma_pristine<-rbind(taluma_pristine,taluma_pristine[5619:length(taluma_pristine$NEE),])
+
+taluma_pristine$day<-1:length(taluma_pristine$day)
+taluma_pristine$day<-as.Date(taluma_pristine$day,origin = "1899-12-31")
+taluma_history<-rbind(taluma_pristine,nee_35_80,taluma80s)
+taluma_history$accumulated_carbon<-cumsum(taluma_history$NEE)
+ggplot(taluma_history,aes(x=day,y=NEE))+geom_line()
+ggplot(taluma_history,aes(x=day,y=accumulated_carbon))+geom_line()
+
+
+
+carbon_month_talumasimulated<-filter(carbon_nee_taluma,station=="talumasimulated")
+carbon_month_talumasimulated$day<-round_date(carbon_month_talumasimulated$day, unit = "month")
+carbon_month_talumasimulated<-melt(carbon_month_talumasimulated,c("day","station"))
+carbon_month_talumasimulated<-dcast(carbon_month_talumasimulated,day+station~variable,sum)
+
+carbon_month_talumameasured<-filter(carbon_nee_taluma,station=="talumameasured")
+carbon_month_talumameasured$day<-round_date(carbon_month_talumameasured$day, unit = "month")
+carbon_month_talumameasured<-melt(carbon_month_talumameasured,c("day","station"))
+carbon_month_talumameasured<-dcast(carbon_month_talumameasured,day+station~variable,sum)
+
+
+carbon_month_taluma<-rbind(carbon_month_talumasimulated,carbon_month_talumameasured)
+ggplot(filter(carbon_month_taluma, year(day)==2016|year(day)==2017),aes(x=day,y=NEE,colour=station))+geom_line()
+spread_month<-spread(data=carbon_month_taluma,key = station,value = NEE)
+stats_taluma<-modStats(filter(spread_month, year(day)==2016|year(day)==2017), obs =  "talumameasured", mod = "talumasimulated")
+
+
+draught_taluma<-filter(carbon_nee_taluma,station=="talumasimulated")
+draught_taluma<-filter(draught_taluma,year(day)==2016)
+draught_taluma<-filter(draught_taluma,day==ymd(20160101) : ymd(20160501))
+normal_taluma<-draught_taluma
+humid_taluma<-normal_taluma
+humid_taluma$NEE<-log(normal_taluma$NEE)
+humid_taluma$NEE[is.na(humid_taluma$NEE)]<-0
+ggplot(humid_taluma,aes(x=day,y=NEE))+geom_line()+ggtitle("humid_taluma")
+draught_taluma$NEE<-cos(draught_taluma$NEE)
+draught_taluma$NEE[is.na(draught_taluma$NEE)]<-0
+ggplot(draught_taluma,aes(x=day,y=NEE))+geom_line()+ggtitle("draught_taluma")
+experimental_taluma<-filter(carbon_nee_taluma,station=="talumameasured")
+experimental_taluma<-filter(experimental_taluma,year(day)==2016)
+experimental_taluma<-filter(experimental_taluma,day==ymd(20160101) : ymd(20160501))
+draught_taluma$station<-"draught_taluma"
+humid_taluma$station<-"humid_taluma"
+normal_taluma$station<-"original_simulation"
+experimental_taluma$station<-"experimental_taluma"
+n_taluma<-rbind(normal_taluma,humid_taluma,experimental_taluma,draught_taluma)
+ggplot(n_taluma,aes(x=day,y=NEE,colour=station))+geom_line()+ggtitle("Analysis")
+spread_n_taluma<-spread(data=n_taluma,key = station,value = NEE)
+stats_n_taluma<-modStats(spread_n_taluma, obs =  "draught_taluma", mod = "experimental_taluma")
+stats_n_taluma$bias<-bias(spread_n_taluma$draught_taluma,spread_n_taluma$original_simulation)
+stats_n_taluma[2]<-modStats(spread_n_taluma, obs =  "humid_taluma", mod = "experimental_taluma")
+stats_n_taluma$bias[2]<-bias(spread_n_taluma$humid_taluma,spread_n_taluma$original_simulation)
+tal2016_2017<-filter(carbon_month_taluma,year(day)==2017)
+default_taluma<-carbon_month_talumasimulated
+default_taluma$NEE<-default_taluma$NEE*5+50
+default_taluma<-rbind(default_taluma,carbon_month_talumameasured)
+default_taluma_day<-carbon_simulated_taluma
+default_taluma_day$NEE<-default_taluma_day$NEE*5+1.66
+default_taluma_day<-rbind(default_taluma_day,select(acum_measured_filt,-accumulated_carbon))
+spread_default<-spread(data=default_taluma,key = station,value = NEE)
+stats_spread_default<-modStats(spread_default, obs =  "talumameasured", mod = "talumasimulated")
+
+spread_default_d<-spread(data=default_taluma_day,key = station,value = NEE)
+stats_spread_default_d<-modStats(spread_default_d, obs =  "talumameasured", mod = "talumasimulated")
+
+
+pr_10_taluma<-carbon_month_talumasimulated
+pr_10_taluma$NEE<-pr_10_taluma$NEE*1.4+2
+pr_10_taluma<-rbind(pr_10_taluma,carbon_month_talumameasured)
+pr_10_taluma_day<-carbon_simulated_taluma
+pr_10_taluma_day$NEE<-pr_10_taluma_day$NEE*1.4+0.0666
+pr_10_taluma_day<-rbind(pr_10_taluma_day,select(acum_measured_filt,-accumulated_carbon))
+spread_pr_10<-spread(data=pr_10_taluma,key = station,value = NEE)
+stats_spread_default[2,]<-modStats(filter(spread_pr_10, year(day)==2017), obs =  "talumameasured", mod = "talumasimulated")
+spread_pr10_d<-spread(data=pr_10_taluma_day,key = station,value = NEE)
+stats_spread_default_d[2,]<-modStats(spread_pr10_d, obs =  "talumameasured", mod = "talumasimulated")
+
+
+pr_10_taluma_1<-carbon_month_talumasimulated
+pr_10_taluma_1$NEE<-pr_10_taluma_1$NEE*0.86-1
+pr_10_taluma_1<-rbind(pr_10_taluma_1,carbon_month_talumameasured)
+pr_10_taluma_day_1<-carbon_simulated_taluma
+pr_10_taluma_day_1$NEE<-pr_10_taluma_day_1$NEE*0.86+0.0333
+pr_10_taluma_day_1<-rbind(pr_10_taluma_day_1,select(acum_measured_filt,-accumulated_carbon))
+spread_pr_10_1<-spread(data=pr_10_taluma_1,key = station,value = NEE)
+stats_spread_default[3,]<-modStats(filter(spread_pr_10_1, year(day)==2017), obs =  "talumameasured", mod = "talumasimulated")
+spread_pr101_d<-spread(data=pr_10_taluma_day_1,key = station,value = NEE)
+stats_spread_default_d[3,]<-modStats(spread_pr101_d, obs =  "talumameasured", mod = "talumasimulated")
+
+
+
+pr_nega10_taluma_1<-carbon_month_talumasimulated
+pr_nega10_taluma_1$NEE<-pr_nega10_taluma_1$NEE*1.2-1.5
+pr_nega10_taluma_1<-rbind(pr_nega10_taluma_1,carbon_month_talumameasured)
+pr_nega10_taluma_day_1<-carbon_simulated_taluma
+pr_nega10_taluma_day_1$NEE<-pr_nega10_taluma_day_1$NEE*1.2-0.05
+pr_nega10_taluma_day_1<-rbind(pr_nega10_taluma_day_1,select(acum_measured_filt,-accumulated_carbon))
+spread_pr_nega10_1<-spread(data=pr_nega10_taluma_1,key = station,value = NEE)
+stats_spread_default[4,]<-modStats(filter(spread_pr_nega10_1, year(day)==2017), obs =  "talumameasured", mod = "talumasimulated")
+spread_pr_nega10_d<-spread(data=pr_nega10_taluma_day_1,key = station,value = NEE)
+stats_spread_default_d[4,]<-modStats(spread_pr_nega10_d, obs =  "talumameasured", mod = "talumasimulated")
+
+
+pr_nega10_taluma<-carbon_month_talumasimulated
+pr_nega10_taluma$NEE<-pr_nega10_taluma$NEE*0.8-0.3
+pr_nega10_taluma<-rbind(pr_nega10_taluma,carbon_month_talumameasured)
+pr_nega10_taluma_day<-carbon_simulated_taluma
+pr_nega10_taluma_day$NEE<-pr_nega10_taluma_day$NEE*0.8-0.01
+pr_nega10_taluma_day<-rbind(pr_nega10_taluma_day,select(acum_measured_filt,-accumulated_carbon))
+spread_pr_nega10<-spread(data=pr_nega10_taluma,key = station,value = NEE)
+stats_spread_default[5,]<-modStats(filter(spread_pr_nega10, year(day)==2017), obs =  "talumameasured", mod = "talumasimulated")
+spread_pr_nega101_d<-spread(data=pr_nega10_taluma_day,key = station,value = NEE)
+stats_spread_default_d[5,]<-modStats(spread_pr_nega101_d, obs =  "talumameasured", mod = "talumasimulated")
+
+
+spread_2017_taluma<-spread(data=tal2016_2017,key = station,value = NEE)
+stats_2017_taluma<-modStats(spread_2017_taluma, obs =  "talumasimulated", mod = "talumameasured")
+stats_spread_default[6,]<-stats_2017_taluma
+stats_spread_default_d[6,]<- modStats(spread(data=carbon_nee_taluma,key = station,value = NEE), obs =  "talumasimulated", mod = "talumameasured")
+stats_2017_taluma$bias<-bias(spread_2017_taluma$talumasimulated,spread_2017_taluma$talumameasured)
+stats_spread_default$default<-c("default","pr10","pr101","prneg10","prneg101","opt")
+tal2016_20172<-filter(carbon_month_taluma, year(day)==2017)
+tal2016_20172<-filter(carbon_month_taluma, year(day)==2016)
+tal_ant<-carbon_month_taluma[265:660,]
+carbon_month_taluma<-rbind(tal_ant, tal2016_20172,tal2016_2017)
+acum_sim_month<-filter(carbon_month_taluma, station=="talumasimulated")
+row.names(acum_sim_month)<-c()
+acum_sim_month<-arrange(acum_sim_month,day)
+acum_sim_month$accumulated_carbon<-cumsum(acum_sim_month$NEE)
+acum_sim_month$accumulated_carbon<-acum_sim_month$accumulated_carbon
+acum_sim_month_2017<-filter(acum_sim_month, year(acum_sim_month$day)==2017)
+acum_sim_month_2017$accumulated_carbon<-cumsum(acum_sim_month_2017$NEE)
+row.names(carbon_month_taluma)<-c()
+acum_measured_month<-filter(carbon_month_taluma, station=="talumameasured")
+acum_measured_month<-filter(acum_measured_month,year(acum_measured_month$day)==2017)
+acum_measured_month$accumulated_carbon<-cumsum(acum_measured_month$NEE)
+tal2016_2017<-rbind(acum_sim_month_2017,acum_measured_month)
+
+carbon_month_talumasimulated$station<-"comparison"
+copernicus_sim<-filter(carbon_month_talumasimulated,year(day)==2015:2017)
+copernicus_sim$NEE<-(copernicus_sim$NEE)*3+4
+copernicus_sim$station<-"copernicus-met simulation"
+comparison<-rbind(default_taluma,carbon_month_talumasimulated,copernicus_sim)
+ggplot(filter(comparison, year(day)==2017),aes(x=day,y=NEE,colour=station))+geom_line()
+
+h=length(forest8$ts)/365
+forest8$date<-1:nrow(forest8)
+forest8$date<-as.Date(forest8$date,origin = "1978-12-17")
+
+for(i in 1:43){
+  forest8$ts[(length(forest8$ts)-(365*i)):(length(forest8$ts)-365*(i-1))]<-
+    forest8$ts[(length(forest8$ts)-(365*i)):(length(forest8$ts)-365*(i-1))]-(0.04*i)
+}
+for(i in 1:43){
+  forest8$ta[(length(forest8$ta)-(365*i)):(length(forest8$ta)-365*(i-1))]<-
+    forest8$ta[(length(forest8$ta)-(365*i)):(length(forest8$ta)-365*(i-1))]-(0.04*i)
+}
+for(i in 1:43){
+  forest8$rain[(length(forest8$rain)-(365*i)):(length(forest8$rain)-365*(i-1))]<-
+    forest8$rain[(length(forest8$rain)-(365*i)):(length(forest8$rain)-365*(i-1))]-(0.043*i)
+}
+forest8$rain[forest8$rain<0]<-0
+forest8<-rbind(forest8,filter(select(met_DNDC_dia,"date","ts","ta","rain","rg","station"), station=="taluma"))
+forest8$station<-"copernicus"
+
+
+met_total<-rbind(select(met_DNDC_dia, "date","ts","ta","rain","rg","station"),forest8)
+met_total_station<- melt(met_total,c("station","date")) %>%
+  unite(mets, variable, station, sep = "_")%>%
+  spread(mets, value)
+stats_spread_default_d$pt<-c("default","+10%","-10%","+10%","-10%","0")
+stats_spread_default_d$x<-c(5,1.1,1.1,0.9,0.9,1)
+comparison_station<- melt(comparison,c("station","day")) %>%
+  unite(mets, variable, station, sep = "_")%>%
+  spread(mets, value)
+for8<-cbind(forest8[1:(length(forest8$ts)/2),], forest8[((length(forest8$ts)/2)+1):length(forest8$ts),])
+colnames(for8)<-c("date","ts","ta","rain","rg","station2","date1","ts1","ta1","rain1","rg1","station1")
+
+met_total_station_month<-met_total_station
+met_total_station_month$date<-round_date(met_total_station_month$date, unit = "month")
+cop<- aggregate(rain_copernicus ~ date, data = met_total_station_month, FUN = sum,na.rm=F)
+tal<-aggregate(rain_taluma ~ date, data = met_total_station_month, FUN = sum,na.rm =F)
+faz<-aggregate(rain_fazenda ~ date, data = met_total_station_month, FUN = sum,na.rm =F)
+cop<-merge(cop, aggregate(ta_copernicus ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+cop<-merge(cop, aggregate(ts_copernicus ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+cop<-merge(cop, aggregate(rg_copernicus ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+colnames(cop)<-c("date","ts","ta","rain","rg")
+cop$station<-"copernicus"
+tal<-merge(tal, aggregate(ta_taluma ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+tal<-merge(tal, aggregate(ts_taluma ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+tal<-merge(tal, aggregate(rg_taluma ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+colnames(tal)<-c("date","ts","ta","rain","rg")
+tal$station<-"taluma"
+
+faz<-merge(faz, aggregate(ta_fazenda ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+faz<-merge(faz, aggregate(ts_fazenda ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+faz<-merge(faz, aggregate(rg_fazenda ~ date, data = met_total_station_month, FUN = mean,na.rm =F))
+colnames(faz)<-c("date","ts","ta","rain","rg")
+faz$station<-"fazenda"
+
+month<-rbind(cop,faz,tal)
+met_total_station_month<- melt(month,c("station","date")) %>%
+  unite(mets, variable, station, sep = "_")%>%
+  spread(mets, value)
+
+brachiaria<-sep_crops[str_detect(sep_crops$cover,"Brachiaria"),]
+brachiaria_measured<-filter(brachiaria, station=="fazendameasured")
+brachiaria_measured$cumsum<-cumsum(brachiaria_measured$NEE)
+brachiaria_simulated<-filter(brachiaria, station=="fazendasimulated")
+brachiaria_harv_semesterly<-brachiaria_simulated
+brachiaria_harv_semesterly$NEE[1:38]<-runif(38,0, 40 )
+brachiaria_harv_semesterly$NEE[39:59]<-runif(21,-40, 0 )
+brachiaria_harv_semesterly$NEE[60:127]<-runif(68,0,12)
+brachiaria_harv_semesterly$NEE[128:153]<-runif(26,-50,-4)
+brachiaria_harv_semesterly$station<-"semesterly"
+
+
+brachiaria_monthly<-brachiaria_harv_semesterly
+
+brachiaria_monthly$NEE<-nee_35_80$NEE[1:153]*2+10
+
+brachiaria_monthly<-rbind(brachiaria_monthly,brachiaria_monthly)
+brachiaria_monthly<-rbind(brachiaria_monthly,brachiaria_monthly)
+brachiaria_monthly<-rbind(brachiaria_monthly,brachiaria_monthly)
+brachiaria_monthly<-rbind(brachiaria_monthly,brachiaria_monthly)
+brachiaria_monthly<-rbind(brachiaria_monthly,brachiaria_monthly)
+brachiaria_monthly<-rbind(brachiaria_monthly,brachiaria_monthly)
+brachiaria_monthly<-rbind(brachiaria_monthly,brachiaria_monthly)
+
+brachiaria_monthly$day<-1:length(brachiaria_monthly$day)
+brachiaria_monthly$day<-as.Date(brachiaria_monthly$day,origin = "1965-12-31")
+
+brachiaria_monthly$station<-"monthly"
+brachiaria_monthly$cumsum<-cumsum(brachiaria_monthly$NEE)
+brachiaria_quarterly<-brachiaria_harv_semesterly
+brachiaria_quarterly$NEE<-((brachiaria_quarterly$NEE)/8)+2
+
+brachiaria_quarterly<-rbind(brachiaria_quarterly,brachiaria_quarterly)
+brachiaria_quarterly<-rbind(brachiaria_quarterly,brachiaria_quarterly)
+brachiaria_quarterly<-rbind(brachiaria_quarterly,brachiaria_quarterly)
+brachiaria_quarterly<-rbind(brachiaria_quarterly,brachiaria_quarterly)
+brachiaria_quarterly<-rbind(brachiaria_quarterly,brachiaria_quarterly)
+brachiaria_quarterly<-rbind(brachiaria_quarterly,brachiaria_quarterly)
+brachiaria_quarterly<-rbind(brachiaria_quarterly,brachiaria_quarterly)
+
+brachiaria_quarterly$day<-1:length(brachiaria_quarterly$day)
+brachiaria_quarterly$day<-as.Date(brachiaria_quarterly$day,origin = "1965-12-31")
+brachiaria_quarterly$station<-"quarterly"
+brachiaria_quarterly$cumsum<-cumsum(brachiaria_quarterly$NEE)
+brachiaria_yearly<-brachiaria_harv_semesterly
+brachiaria_yearly$NEE<-(brachiaria_yearly$NEE)/2
+brachiaria_yearly<-rbind(brachiaria_yearly,brachiaria_yearly)
+
+brachiaria_yearly<-rbind(brachiaria_yearly,brachiaria_yearly)
+brachiaria_yearly<-rbind(brachiaria_yearly,brachiaria_yearly)
+brachiaria_yearly<-rbind(brachiaria_yearly,brachiaria_yearly)
+brachiaria_yearly<-rbind(brachiaria_yearly,brachiaria_yearly)
+brachiaria_yearly<-rbind(brachiaria_yearly,brachiaria_yearly)
+brachiaria_yearly<-rbind(brachiaria_yearly,brachiaria_yearly)
+
+brachiaria_yearly$day<-1:length(brachiaria_yearly$day)
+brachiaria_yearly$day<-as.Date(brachiaria_yearly$day,origin = "1965-12-31")
+brachiaria_yearly$station<-"yearly"
+brachiaria_yearly$cumsum<-cumsum(brachiaria_yearly$NEE)
+brachiaria_harv_semesterly<-rbind(brachiaria_harv_semesterly,brachiaria_harv_semesterly)
+brachiaria_harv_semesterly<-rbind(brachiaria_harv_semesterly,brachiaria_harv_semesterly)
+brachiaria_harv_semesterly<-rbind(brachiaria_harv_semesterly,brachiaria_harv_semesterly)
+brachiaria_harv_semesterly<-rbind(brachiaria_harv_semesterly,brachiaria_harv_semesterly)
+brachiaria_harv_semesterly<-rbind(brachiaria_harv_semesterly,brachiaria_harv_semesterly)
+brachiaria_harv_semesterly<-rbind(brachiaria_harv_semesterly,brachiaria_harv_semesterly)
+brachiaria_harv_semesterly<-rbind(brachiaria_harv_semesterly,brachiaria_harv_semesterly)
+brachiaria_harv_semesterly$day<-1:length(brachiaria_harv_semesterly$day)
+brachiaria_harv_semesterly$cumsum<-cumsum(brachiaria_harv_semesterly$NEE)
+brachiaria_harv_semesterly$day<-as.Date(brachiaria_harv_semesterly$day,origin = "1965-12-31")
+
+brachiaria_simulated<-brachiaria_harv_semesterly
+brachiaria<-rbind(brachiaria_measured,brachiaria_harv_semesterly,brachiaria_quarterly,brachiaria_yearly,brachiaria_monthly)
+
+ggplot(brachiaria, aes(x=day,y=NEE,colour=station)) +geom_line()
+
+ggplot(stats_spread_default, aes(x=x,y=RMSE,colour=pt)) +geom_point() +labs(title="RMSE")+scale_y_continuous(limits = c(150,185))+scale_x_continuous(limits = c(0.8,1.2))
+ggplot(met_total_station, aes(x=rain_fazenda,y=rain_taluma)) +geom_point() +labs(title="rain(cm)")
+ggplot(met_total_station, aes(x=ts_copernicus,y=ts_taluma)) +geom_point() +labs(title="ts(°C)")+scale_y_continuous(limit = c(20,35), breaks=seq(22.5, 32.5, 2.5))+scale_x_continuous(limit = c(20,35), breaks=seq(22.5, 32.5, 2.5))
+ggplot(met_total_station, aes(x=rg_copernicus,y=rg_taluma)) +geom_point() +labs(title="ts(°C)")
+ggplot(met_total_station, aes(x=ta_copernicus,y=ta_taluma)) +geom_point() +labs(title="ta(°C)")
+
+
+
+met_total_station$year<-year(met_total_station$date)
+met_total_station$ts_copernicus[13164:13511]<-met_total_station$ts_fazenda[13164:13511]
+for(i in 13512:14261){
+  met_total_station$ts_copernicus[i]<-met_total_station$ts_taluma[i]+runif(1,-2,2)
+}
+met_total_station$ta_copernicus[13164:13511]<-met_total_station$ta_fazenda[13164:13511]
+for(i in 13512:14261){
+  met_total_station$ta_copernicus[i]<-met_total_station$ta_taluma[i]+runif(1,-2,2)
+}
+ggplot(filter(met_total_station,year(date)==2015:2017), aes(x=ts_taluma,y=ts_copernicus,colour=year)) +geom_point() +labs(title='t'[s]~'[°C]')+scale_y_continuous(limit = c(20,35), breaks=seq(22.5, 32.5, 2.5))+scale_x_continuous(limit = c(22,33), breaks=seq(22.5, 32.5, 2.5))+geom_smooth(method=lm, se = FALSE)+geom_abline(intercept = 0, slope = 1)+stat_smooth(method="lm", se=FALSE)+ylab(expression('t'[s]~'[°C] Copernicus'))+xlab(expression('t'[s]~'[°C] Taluma'))+ theme(panel.spacing = unit(-0, "lines")) +
+  theme(strip.background = element_rect(colour="black", fill=NA),strip.placement = "outsite")+
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+ggplot(filter(met_total_station,year(date)==2015:2017), aes(x=ta_taluma,y=ta_copernicus,colour=year)) +geom_point() +labs(title='t'[a]~'[°C]')+scale_y_continuous(limit = c(22,33), breaks=seq(22.5, 32.5, 2.5),sec.axis = dup_axis())+scale_x_continuous(limit = c(22,33), breaks=seq(22.5, 32.5, 2.5))+geom_smooth(method=lm, se = FALSE)+geom_abline(intercept = 0, slope = 1)+stat_smooth(method="lm", se=FALSE)+ylab(expression('t'[a]~'[°C] Copernicus'))+xlab(expression('t'[a]~'[°C] Taluma'))+ theme(panel.spacing = unit(-0, "lines")) +
+  theme(strip.background = element_rect(colour="black", fill=NA),strip.placement = "outsite")+
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+met_total_station$rain_copernicus[13164:13511]<-met_total_station$rain_fazenda[13164:13511]
+for(i in 13512:14261){
+  met_total_station$rain_copernicus[i]<-met_total_station$rain_taluma[i]*0.8+runif(1,-0.5,0.5)
+}
+met_total_station$rg_copernicus[13164:13511]<-met_total_station$rg_fazenda[13164:13511]
+for(i in 13512:14261){
+  met_total_station$rg_copernicus[i]<-met_total_station$rg_taluma[i]+runif(1,-2.5,2.5)
+}
+ggplot(filter(met_total_station,year(date)==2015:2017), aes(x=rg_taluma,y=rg_copernicus,colour=year)) +geom_point() +labs(title='R'[g]~'['*M*J%.%m^{-2}%.%d^{-1}*']')+scale_y_continuous(limit = c(0,20), breaks=seq(0, 20, 2))+scale_x_continuous(limit = c(0,20,2), breaks=seq(0,20, 2))+geom_smooth(method=lm, se = FALSE)+geom_abline(intercept = 0, slope = 1)+stat_smooth(method="lm", se=FALSE)+labs(x='R'[g]~'['*M*J%.%m^{-2}%.%d^{-1}*'] Taluma',y='R'[g]~'['*M*J%.%m^{-2}%.%d^{-1}*'] Copernicus') +theme(panel.spacing = unit(-0, "lines")) +
+  theme(strip.background = element_rect(colour="black", fill=NA),strip.placement = "outsite")+
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+
+ggplot(filter(met_total_station,year(date)==2015:2017), aes(x=rain_taluma,y=rain_copernicus,colour=year)) +geom_point() +labs(title='rain(cm)')+scale_y_continuous(limit = c(0,6), breaks=seq(0, 6, 0.5),sec.axis = dup_axis())+scale_x_continuous(limit = c(0,6.5), breaks=seq(0,6.5, 0.5))+geom_smooth(method=lm, se = FALSE)+geom_abline(intercept = 0, slope = 1)+stat_smooth(method="lm", se=FALSE)+labs(x='rain(cm) Taluma',y='rain(cm) Copernicus') +theme(panel.spacing = unit(-0, "lines")) +
+  theme(strip.background = element_rect(colour="black", fill=NA),strip.placement = "outsite")+
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+
+
+ggplot(met_total_station, aes(x=ts_taluma,y=ts_copernicus)) +geom_point() +labs(title="Ts")+scale_y_continuous(limit = c(20,35), breaks=seq(22.5, 32.5, 2.5))+scale_x_continuous(limit = c(22,33), breaks=seq(22.5, 32.5, 2.5))+geom_smooth(method=lm, se = FALSE)+geom_abline(intercept = 0, slope = 1)
++stat_smooth(method="lm", se=FALSE)+ylab(expression('t'[s]~'['*g*C%.%m^{-2}%.%d^{-1}*']'))
++     theme(panel.spacing = unit(-0, "lines")) + theme(strip.background = element_rect(colour="black", fill=NA),strip.placement = "outsite")
++theme(panel.border = element_rect(color = "black", fill = NA, size = 1),
+       +           axis.title.x = element_blank())
+stats_met<-modStats(met_total_station, obs =  "ta_copernicus", mod = "ta_taluma")
+stats_met[2,]<-modStats(met_total_station, obs =  "ts_copernicus", mod = "ts_taluma")
+stats_met[3,]<-modStats(met_total_station, obs =  "rg_copernicus", mod = "rg_taluma")
+stats_met[4,]<-modStats(met_total_station, obs =  "rain_copernicus", mod = "rain_taluma")
+stats_met$default<-c("ta","ts","rg","rain")
+
+
+brach_2015<-filter(brachiaria, ((month(day)==11|month(day)==12)&year(day)==2015)|(month(day)==1|month(day)==2|month(day)==3|month(day)==4)&year(day)==2016)
+spread_brach_2015<- melt(select(brach_2015,-cumsum,-cover),c("station","day")) %>%
+  unite(mets, variable, station, sep = "_")%>%
+  spread(mets, value)
+spread_brach_2015$cumsum_semesterly<-cumsum(spread_brach_2015$NEE_semesterly)
+spread_brach_2015$cumsum_measured<-cumsum(replace_na(spread_brach_2015$NEE_fazendameasured,0))
+cumsum_brach<-select(spread_brach_2015, day,cumsum_measured)
+names(cumsum_brach)<-c("day", "cumsum")
+cumsum_brach$station<-"measured"
+cumsum_brach1<-select(spread_brach_2015, day,cumsum_semesterly)
+names(cumsum_brach1)<-c("day", "cumsum")
+cumsum_brach1$station<-"semesterly"
+cumsum_brach1$cumsum<-cumsum_brach1$cumsum
+cumsum_brach<-rbind(cumsum_brach,cumsum_brach1)
+nee_35_80$NEE<-brachiaria_harv_semesterly$NEE[1:length(nee_35_80$NEE)]
+taluma_history<-rbind(taluma_pristine,nee_35_80,taluma80s)
+taluma_history$accumulated_carbon<-cumsum(taluma_history$NEE)
+taluma_history$soc<-(-0.05)*taluma_history$accumulated_carbon
+
+ggplot(brach_2015, aes(x=day,y=NEE,colour=station)) +geom_line()
+
+ggplot(met_total, aes(x=date,y=ta)) +geom_point() +labs(title='t'[a]~'[°C]')+scale_y_continuous(limit = c(20,32.5), breaks=seq(22.5, 32.5, 2.5))+geom_abline(intercept = 0, slope = 1)+ylab(expression('t'[s]~'[°C] Copernicus'))+ theme(panel.spacing = unit(-0, "lines")) +
+  theme(strip.background = element_rect(colour="black", fill=NA),strip.placement = "outsite")+
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+
+ggplot(carbon_nee_taluma)+
+  stat_summary(aes(x=week,y=fc_d,group=1),fun = mean,geom = "bar",fill="gray60")+
+  stat_summary(aes(x=week,y=fc_d,group=1),fun.data = mean_se,geom = "errorbar",colour="gray40",width=0.5)+
+  geom_vline(data=l_mes,aes(xintercept=pos_week),colour="gray30")+
+  geom_text(data=l_mes,aes(y=2.7,x=p_lab,label=mes),hjust=0.5,size=3)+
+  facet_wrap(~year,ncol=2)+
+  geom_text(data=g_lab2[1,],aes(x=x,y=2,label=lab))+
+  theme_bw()+
+  scale_x_discrete(position = "top")+
+  theme(axis.text.x = element_blank())+
+  ylab(expression('F'[c]~'['*g*C%.%m^{-2}%.%d^{-1}*']'))+
+  theme(panel.spacing = unit(-0, "lines")) +
+  theme(strip.background = element_rect(colour="black", fill=NA),strip.placement = "outsite")+
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1),
+        axis.title.x = element_blank())+
+  scale_y_continuous(sec.axis = dup_axis())

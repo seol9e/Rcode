@@ -1,0 +1,71 @@
+
+library(readr)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(ggplot2)
+library(openair)
+library(stringr)
+library(plyr)
+acreditado<-read.csv("C:/Users/Rafael B/Documents/laboratorios_acreditados.csv")
+acreditado2<-read.csv("C:/Users/Rafael B/Documents/LISTADO MATRIZ AIRE.csv")
+sum(str_count(acreditado$Componente,pattern ="Calidad de aire" ))
+sum(str_count(acreditado$Componente,pattern ="Fuentes Fijas" ))
+unique(acreditado$Nombre.del.Laboratorio)
+doble_acreditacion<-acreditado$Nombre.del.Laboratorio[duplicated(acreditado$Nombre.del.Laboratorio)]
+doble_acreditacion1<-acreditado[duplicated(acreditado$Nombre.del.Laboratorio),]
+doble_acreditacion2<-acreditado[doble_acreditacion1$Nombre.del.Laboratorio==acreditado$Nombre.del.Laboratorio,]
+dacr<-rbind(doble_acreditacion1,doble_acreditacion2)
+sum(str_count(acreditado$Actividad))
+unique(acreditado$Ciudad)
+col <- c("black","dodgerblue","firebrick1","chartreuse3",
+         "deeppink","darkorchid3","darkorange1","bisque", "darkgray", "darkorchid", "#13FF00", 
+         "cadetblue2", "burlywood", "darkgoldenrod1", "darkolivegreen1", "lightgrey", 
+         "darkkhaki", "deepskyblue2", "darkorange4","darkslateblue","chocolate3","indianred1",
+         "khaki","lavender","black","dodgerblue","firebrick1","chartreuse3",
+         "deeppink","darkorchid3","darkorange1","bisque", "darkgray", "darkorchid", "#13FF00", 
+         "cadetblue2", "burlywood", "darkgoldenrod1", "darkolivegreen1", "lightgrey", 
+         "darkkhaki", "deepskyblue2", "darkorange4","darkslateblue","chocolate3","indianred1",
+         "khaki","lavender","black","dodgerblue","firebrick1","chartreuse3",
+         "deeppink","darkorchid3","darkorange1","bisque", "darkgray", "darkorchid", "#13FF00", 
+         "cadetblue2", "burlywood", "darkgoldenrod1", "darkolivegreen1", "lightgrey", 
+         "darkkhaki", "deepskyblue2", "darkorange4","darkslateblue","chocolate3","indianred1",
+         "khaki","lavender" )
+freq<-count(acreditado,"Variable")
+freq$Variable<-c("C6H6","Br-","DPTPRMYVDF","SO2","NO2","PM2.5","PM","PM10","CO","STP")
+acreditado$Componente<-str_replace_all(acreditado$Componente,"Calidad de Aire", "Calidad de aire")
+ggplot(freq, aes(x=Variable,y=freq))+geom_bar(stat="identity")
+ggplot(acreditado, aes(Componente,fill=Ciudad))+geom_bar(position=position_dodge())+theme_minimal()
+acreditado$Componente<-str_replace_all(acreditado$Componente,"Calidad de Aire", "Calidad de aire")
+caff<-count(acreditado,"Componente")
+ciudad<-count(acreditado, "Ciudad")
+acreditado$TŽcnica
+ggplot(acreditado, aes(Componente,fill=Ciudad))+geom_bar(position=position_dodge())+theme_minimal()+scale_fill_manual(values = col)+ylab("laboratorios acreditados")
+leyigual<-acreditado[duplicated(acreditado$Actos.administrativos.que.soportan.el.alcance),]
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Material Particulado Menor a 10 micras", "PM10")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Material Part’culado Menor a 2.5 micras", "PM2.5")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Part’culas Suspendidas Totales", "PST")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Di—xido de Azufre", "SO2")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Determinaci—n de Puntos Transversos para Realizar Muestreo y Velocidad en Fuentes Estacionarias", "DPTRMVFE")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Di—xido de Nitr—geno", "NO2")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Mon—xido de Carbono", "CO")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Bromuro", "Br-")
+acreditado$Variable<-str_replace_all(acreditado$Variable,"Benceno", "C6H6")
+acreditado$Actividad<-str_replace_all(acreditado$Actividad,"Determinaci—n", "determinacion")
+colnames(acreditado)=c("codigo","acreditacion","matriz","componente","actividad","grupo","variable","tecnica","metodo","intervalo_med_dir","nom_est","direccion","latitud","longitud","id equipo","nombre_lab","NIT","contacto","ciudad","departamento","direccion2","telefono","correo","actos","desde","hasta", "acogimiento")
+acreditado[acreditado$tecnica=="---","tecnica"]<-NA
+freqdacr<-count(dacr,"Nombre.del.Laboratorio" )
+freqdacr=freqdacr[-1,]
+freqdacre$conv<-2:length(freqdacr$freq)
+metodo<-count(acreditado,"metodo")
+ggplot(freqdacr, aes(Seleccione.las.actividades.que.su.organización.realiza,fill=Microbalanza..6.cifras.decimales.))+geom_bar(position=position_dodge())+theme_minimal()+scale_fill_manual(values = col)+ylab("laboratorios acreditados")
+
+grupo_agua<-count(filter(acreditado2,Componente=="Agua")$Grupo)
+tecnica_agua<-count(filter(acreditado2,Componente=="Agua")$T.cnica)
+grupo_agua<-grupo_agua[-1,]
+grupo_agua$perc<-grupo_agua$freq/sum(grupo_agua$freq)*100
+grupo_agua$perc<-round(grupo_agua$perc,digits = 2)  
+tecnica_agua<-tecnica_agua[-1,]
+tecnica_agua$perc<-tecnica_agua$freq/sum(tecnica_agua$freq)*100
+tecnica_agua$perc<-round(tecnica_agua$perc,digits = 2)

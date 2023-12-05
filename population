@@ -69,3 +69,68 @@ counties_selected %>%
 3 South            7370486     4804098
 4 West             5722755.    2798636
  average_income=mean(income))
+counties_selected %>%
+  group_by(region, state) %>%
+  # Calculate average income
+  summarize(average_income=mean(income))%>%
+  # Find the lowest income state in each region
+  slice_min(average_income,n=1)
+# A tibble: 4 × 3
+# Groups:   region [4]
+  region        state       average_income
+  <chr>         <chr>                <dbl>
+1 North Central Missouri            41755.
+2 Northeast     Maine               46142.
+3 South         Mississippi         34939.
+4 West          New Mexico          40184.
+counties_selected %>%
+  # Find the total population for each combination of state and metro
+  group_by(state, metro) %>%
+  summarize(total_pop = sum(population)) %>%
+  # Extract the most populated row for each state
+  slice_max(total_pop, n = 1) %>%
+  # Count the states with more people in Metro or Nonmetro areas
+  ungroup()%>%
+  count(metro)
+# A tibble: 2 × 2
+  metro        n
+  <chr>    <int>
+1 Metro       44
+2 Nonmetro     6
+   # Glimpse the counties table
+glimpse(counties)
+counties %>%
+  # Select state, county, population, and industry-related columns
+  select(state, county, population,professional:production)%>%
+  # Arrange service in descending order 
+  arrange(desc(service))
+# A tibble: 3,138 × 8
+   state   county population professional service office construction production
+   <chr>   <chr>       <dbl>        <dbl>   <dbl>  <dbl>        <dbl>      <dbl>
+ 1 Missis… Tunica      10477         23.9    36.6   21.5          3.5       14.5
+ 2 Texas   Kinney       3577         30      36.5   11.6         20.5        1.3
+ 3 Texas   Kenedy        565         24.9    34.1   20.5         20.5        0  
+ 4 New Yo… Bronx     1428357         24.3    33.3   24.2          7.1       11  
+ 5 Texas   Brooks       7221         19.6    32.4   25.3         11.1       11.5
+ 6 Colora… Fremo…      46809         26.6    32.2   22.8         10.7        7.6
+ 7 Texas   Culbe…       2296         20.1    32.2   24.2         15.7        7.8
+ 8 Califo… Del N…      27788         33.9    31.5   18.8          8.9        6.8
+ 9 Minnes… Mahno…       5496         26.8    31.5   18.7         13.1        9.9
+10 Virgin… Lanca…      11129         30.3    31.2   22.8          8.1        7.6
+# … with 3,128 more rows
+
+counties %>%
+  # Select the state, county, population, and those ending with "work"
+  select(state,county,population,ends_with("work"))%>%
+  # Filter for counties that have at least 50% of people engaged in public work
+  filter(public_work>50)
+# A tibble: 7 × 6
+  state        county            population private_work public_work family_work
+  <chr>        <chr>                  <dbl>        <dbl>       <dbl>       <dbl>
+1 Alaska       Lake and Peninsu…       1474         42.2        51.6         0.2
+2 Alaska       Yukon-Koyukuk Ce…       5644         33.3        61.7         0  
+3 California   Lassen                 32645         42.6        50.5         0.1
+4 Hawaii       Kalawao                   85         25          64.1         0  
+5 North Dakota Sioux                   4380         32.9        56.8         0.1
+6 South Dakota Todd                    9942         34.4        55           0.8
+7 Wisconsin    Menominee               4451         36.8        59.1         0.4

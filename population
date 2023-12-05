@@ -9,3 +9,63 @@ counties_selected %>%
   mutate(population_walk=population*walk/100)%>%
   # Count weighted by the new column, sort in descending order
   count(state, wt=population_walk, sort=TRUE)
+# A tibble: 50 × 2
+   state                n
+   <chr>            <dbl>
+ 1 New York      1237938.
+ 2 California    1017964.
+ 3 Pennsylvania   505397.
+ 4 Texas          430783.
+ 5 Illinois       400346.
+ 6 Massachusetts  316765.
+ 7 Florida        284723.
+ 8 New Jersey     273047.
+ 9 Ohio           266911.
+10 Washington     239764.
+# … with 40 more rows
+
+counties_selected %>%
+  # Summarize to find minimum population, maximum unemployment, and average income
+ summarize(min_population=min(population),
+ max_unemployment= max(unemployment), 
+# A tibble: 1 × 3
+  min_population max_unemployment average_income
+           <dbl>            <dbl>          <dbl>
+1             85             29.4         46832.
+counties_selected %>%
+  group_by(state) %>%
+  summarize(total_area = sum(land_area),
+            total_population = sum(population)) %>%
+  # Add a density column
+  mutate(density=total_population/total_area)%>%
+  # Sort by density in descending order
+  arrange(desc(density))
+# A tibble: 50 × 4
+   state         total_area total_population density
+   <chr>              <dbl>            <dbl>   <dbl>
+ 1 New Jersey         7354.          8904413   1211.
+ 2 Rhode Island       1034.          1053661   1019.
+ 3 Massachusetts      7800.          6705586    860.
+ 4 Connecticut        4842.          3593222    742.
+ 5 Maryland           9707.          5930538    611.
+ 6 Delaware           1949.           926454    475.
+ 7 New York          47126.         19673174    417.
+ 8 Florida           53625.         19645772    366.
+ 9 Pennsylvania      44743.         12779559    286.
+10 Ohio              40861.         11575977    283.
+# … with 40 more rows
+
+counties_selected %>%
+  # Group and summarize to find the total population
+  group_by(region, state) %>%
+  summarize(total_pop = sum(population)) %>%
+  # Calculate the average_pop and median_pop columns 
+  summarize(average_pop = mean(total_pop),median_pop = median(total_pop))
+# A tibble: 4 × 3
+  region        average_pop median_pop
+  <chr>               <dbl>      <dbl>
+1 North Central    5627687.    5580644
+2 Northeast        6221058.    3593222
+3 South            7370486     4804098
+4 West             5722755.    2798636
+ average_income=mean(income))

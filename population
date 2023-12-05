@@ -154,3 +154,74 @@ counties %>%
  9 Florida               67
 10 Georgia              159
 # … with 40 more rows
+counties %>%
+  # Select state, county, and poverty as poverty_rate
+  select(state, county, poverty, poverty_rate=poverty)
+# A tibble: 3,138 × 3
+   state   county   poverty_rate
+   <chr>   <chr>           <dbl>
+ 1 Alabama Autauga          12.9
+ 2 Alabama Baldwin          13.4
+ 3 Alabama Barbour          26.7
+ 4 Alabama Bibb             16.8
+ 5 Alabama Blount           16.7
+ 6 Alabama Bullock          24.6
+ 7 Alabama Butler           25.4
+ 8 Alabama Calhoun          20.5
+ 9 Alabama Chambers         21.6
+10 Alabama Cherokee         19.2
+# … with 3,128 more rows
+counties_selected %>%
+  # Move the density column to the end
+  relocate(density,.after=last_col())%>%
+  # Move the population column to before land_area
+  relocate(population, .before=land_area)
+# A tibble: 3,138 × 5
+   state   county   population land_area density
+   <chr>   <chr>         <dbl>     <dbl>   <dbl>
+ 1 Alabama Autauga       55221      594.    92.9
+ 2 Alabama Baldwin      195121     1590.   123. 
+ 3 Alabama Barbour       26932      885.    30.4
+ 4 Alabama Bibb          22604      623.    36.3
+ 5 Alabama Blount        57710      645.    89.5
+ 6 Alabama Bullock       10678      623.    17.1
+ 7 Alabama Butler        20354      777.    26.2
+ 8 Alabama Calhoun      116648      606.   193. 
+ 9 Alabama Chambers      34079      597.    57.1
+10 Alabama Cherokee      26008      554.    47.0
+# … with 3,128 more rows
+# Change the name of the unemployment column
+counties %>%
+  rename(unemployment_rate = unemployment)
+
+# Keep the state and county columns, and the columns containing poverty
+counties %>%
+  select(state, county, contains("poverty"))
+
+# Calculate the fraction_women column without dropping the other columns
+counties %>%
+ mutate(fraction_women = women / population)
+
+# Move the region column to before state
+counties %>%
+  relocate(region, .before = state)
+# A tibble: 3,138 × 40
+   census_id region state   county   metro population   men women hispanic white
+   <chr>     <chr>  <chr>   <chr>    <chr>      <dbl> <dbl> <dbl>    <dbl> <dbl>
+ 1 1001      South  Alabama Autauga  Metro      55221 26745 28476      2.6  75.8
+ 2 1003      South  Alabama Baldwin  Metro     195121 95314 99807      4.5  83.1
+ 3 1005      South  Alabama Barbour  Nonm…      26932 14497 12435      4.6  46.2
+ 4 1007      South  Alabama Bibb     Metro      22604 12073 10531      2.2  74.5
+ 5 1009      South  Alabama Blount   Metro      57710 28512 29198      8.6  87.9
+ 6 1011      South  Alabama Bullock  Nonm…      10678  5660  5018      4.4  22.2
+ 7 1013      South  Alabama Butler   Nonm…      20354  9502 10852      1.2  53.3
+ 8 1015      South  Alabama Calhoun  Metro     116648 56274 60374      3.5  73  
+ 9 1017      South  Alabama Chambers Nonm…      34079 16258 17821      0.4  57.3
+10 1019      South  Alabama Cherokee Nonm…      26008 12975 13033      1.5  91.7
+# … with 3,128 more rows, and 30 more variables: black <dbl>, native <dbl>,
+#   asian <dbl>, pacific <dbl>, citizens <dbl>, income <dbl>, income_err <dbl>,
+#   income_per_cap <dbl>, income_per_cap_err <dbl>, poverty <dbl>,
+#   child_poverty <dbl>, professional <dbl>, service <dbl>, office <dbl>,
+#   construction <dbl>, production <dbl>, drive <dbl>, carpool <dbl>,
+#   transit <dbl>, walk <dbl>, other_transp <dbl>, work_at_home <dbl>,
+#   mean_commute <dbl>, employed <dbl>, private_work <dbl>, …

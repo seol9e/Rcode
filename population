@@ -134,3 +134,23 @@ counties %>%
 5 North Dakota Sioux                   4380         32.9        56.8         0.1
 6 South Dakota Todd                    9942         34.4        55           0.8
 7 Wisconsin    Menominee               4451         36.8        59.1         0.4
+
+counties %>%
+  # Count the number of counties in each state
+  count(state) %>%
+  # Rename the n column to num_counties
+  rename(num_counties=n)
+# A tibble: 50 × 2
+   state       num_counties
+   <chr>              <int>
+ 1 Alabama               67
+ 2 Alaska                28
+ 3 Arizona               15
+ 4 Arkansas              75
+ 5 California            58
+ 6 Colorado              64
+ 7 Connecticut            8
+ 8 Delaware               3
+ 9 Florida               67
+10 Georgia              159
+# … with 40 more rows

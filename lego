@@ -122,4 +122,74 @@ parts %>%
  9          11   490 Bricks                 
 10          12    85 Technic Connectors     
 # … with 54 more rows
-
+themes %>% 
+# Start with inventory_parts_joined table
+inventory_parts_joined %>%
+  # Combine with the sets table 
+  inner_join(sets, by="set_num") %>%
+  # Combine with the themes table 
+  inner_join(themes, by = c("theme_id"="id"), suffix=c("_set","_theme"))
+  # Inner join the themes table
+  inner_join(themes, by=c("id"="parent_id"), suffix=c("_parent","_child"))%>%
+  # Filter for the "Harry Potter" parent name 
+  filter(name_parent=="Harry Potter")
+# A tibble: 6 × 5
+     id name_parent  parent_id id_child name_child          
+  <dbl> <chr>            <dbl>    <dbl> <chr>               
+1   246 Harry Potter        NA      247 Chamber of Secrets  
+2   246 Harry Potter        NA      248 Goblet of Fire      
+3   246 Harry Potter        NA      249 Order of the Phoenix
+4   246 Harry Potter        NA      250 Prisoner of Azkaban 
+5   246 Harry Potter        NA      251 Sorcerer's Stone    
+6   246 Harry Potter        NA      667 Fantastic Beasts 
+# Join themes to itself again to find the grandchild relationships
+themes %>% 
+  inner_join(themes, by = c("id" = "parent_id"), suffix = c("_parent", "_child")) %>%
+  inner_join(themes, by=c("id_child"="parent_id"), suffix=c("_parent", "_grandchild"))
+# A tibble: 158 × 7
+   id_parent name_parent parent_id id_child name_child id_grandchild name       
+       <dbl> <chr>           <dbl>    <dbl> <chr>              <dbl> <chr>      
+ 1         1 Technic            NA        5 Model                  6 Airport    
+ 2         1 Technic            NA        5 Model                  7 Constructi…
+ 3         1 Technic            NA        5 Model                  8 Farm       
+ 4         1 Technic            NA        5 Model                  9 Fire       
+ 5         1 Technic            NA        5 Model                 10 Harbor     
+ 6         1 Technic            NA        5 Model                 11 Off-Road   
+ 7         1 Technic            NA        5 Model                 12 Race       
+ 8         1 Technic            NA        5 Model                 13 Riding Cyc…
+ 9         1 Technic            NA        5 Model                 14 Robot      
+10         1 Technic            NA        5 Model                 15 Traffic    
+# … with 148 more rows
+themes %>% 
+  # Left join the themes table to its own children
+  left_join(themes, by=c("id"="parent_id"),suffix=c("_parent","_child")) %>%
+  # Filter for themes that have no child themes
+  filter(is.na(name_child))
+# A tibble: 586 × 5
+      id name_parent    parent_id id_child name_child
+   <dbl> <chr>              <dbl>    <dbl> <chr>     
+ 1     2 Arctic Technic         1       NA <NA>      
+ 2     3 Competition            1       NA <NA>      
+ 3     4 Expert Builder         1       NA <NA>      
+ 4     6 Airport                5       NA <NA>      
+ 5     7 Construction           5       NA <NA>      
+ 6     8 Farm                   5       NA <NA>      
+ 7     9 Fire                   5       NA <NA>      
+ 8    10 Harbor                 5       NA <NA>      
+ 9    11 Off-Road               5       NA <NA>      
+10    12 Race                   5       NA <NA>      
+# … with 576 more rows
+# A tibble: 258,958 × 9
+   set_num  part_num color_id quantity name_set         year theme_id name_theme
+   <chr>    <chr>       <dbl>    <dbl> <chr>           <dbl>    <dbl> <chr>     
+ 1 40179-1  3024           72      900 Personalised M…  2016      277 Mosaic    
+ 2 40179-1  3024           15      900 Personalised M…  2016      277 Mosaic    
+ 3 40179-1  3024            0      900 Personalised M…  2016      277 Mosaic    
+ 4 40179-1  3024           71      900 Personalised M…  2016      277 Mosaic    
+ 5 40179-1  3024           14      900 Personalised M…  2016      277 Mosaic    
+ 6 k34434-1 3024           15      810 Lego Mosaic Ti…  2003      277 Mosaic    
+ 7 21010-1  3023          320      771 Robie House      2011      252 Architect…
+ 8 k34431-1 3024            0      720 Lego Mosaic Cat  2003      277 Mosaic    
+ 9 42083-1  2780            0      684 Bugatti Chiron   2018        5 Model     
+10 k34434-1 3024            0      540 Lego Mosaic Ti…  2003      277 Mosaic    
+# … with 258,948 more rows, and 1 more variable: pare

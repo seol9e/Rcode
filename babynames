@@ -52,3 +52,26 @@ babynames %>%
  9  2010 Aadi         54    3672066 0.0000147 
 10  2005 Aadil        20    3828460 0.00000522
 # … with 48,030 more rows
+babynames %>%
+  # Add columns name_total and name_max for each name
+  group_by(name) %>%
+  mutate(name_total = sum(number),
+         name_max = max(number)) %>%
+  # Ungroup the table 
+ungroup()%>%
+  # Add the fraction_max column containing the number by the name maximum 
+ mutate(fraction_max=number/name_max)
+# A tibble: 332,595 × 6
+    year name    number name_total name_max fraction_max
+   <dbl> <chr>    <int>      <int>    <int>        <dbl>
+ 1  1880 Aaron      102     114739    14635     0.00697 
+ 2  1880 Ab           5         77       31     0.161   
+ 3  1880 Abbie       71       4330      445     0.160   
+ 4  1880 Abbott       5        217       51     0.0980  
+ 5  1880 Abby         6      11272     1753     0.00342 
+ 6  1880 Abe         50       1832      271     0.185   
+ 7  1880 Abel         9      10565     3245     0.00277 
+ 8  1880 Abigail     12      72600    15762     0.000761
+ 9  1880 Abner       27       1552      199     0.136   
+10  1880 Abraham     81      17882     2449     0.0331  
+# … with 332,585 more rows

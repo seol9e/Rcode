@@ -179,6 +179,12 @@ themes %>%
  9    11 Off-Road               5       NA <NA>      
 10    12 Race                   5       NA <NA>      
 # … with 576 more rows
+# Start with inventory_parts_joined table
+inventory_parts_joined %>%
+  # Combine with the sets table 
+  inner_join(sets, by="set_num") %>%
+  # Combine with the themes table 
+  inner_join(themes, by = c("theme_id"="id"), suffix=c("_set","_theme"))
 # A tibble: 258,958 × 9
    set_num  part_num color_id quantity name_set         year theme_id name_theme
    <chr>    <chr>       <dbl>    <dbl> <chr>           <dbl>    <dbl> <chr>     
@@ -192,4 +198,180 @@ themes %>%
  8 k34431-1 3024            0      720 Lego Mosaic Cat  2003      277 Mosaic    
  9 42083-1  2780            0      684 Bugatti Chiron   2018        5 Model     
 10 k34434-1 3024            0      540 Lego Mosaic Ti…  2003      277 Mosaic    
-# … with 258,948 more rows, and 1 more variable: pare
+# … with 258,948 more rows, and 1 more variable: parent_id <dbl>
+
+# Count the part number and color id, weight by quantity
+batman %>%
+  count(part_num, color_id, wt=quantity)
+batman_parts %>%
+  # Combine the star_wars_parts table 
+  full_join(star_wars_parts, by=c("part_num" , "color_id"), suffix=c("_batman","_star_wars")) %>%
+  # Replace NAs with 0s in the n_batman and n_star_wars columns 
+  replace_na(list(n_batman=0, n_star_wars=0))
+# A tibble: 3,628 × 4
+   part_num color_id n_batman n_star_wars
+   <chr>       <dbl>    <dbl>       <dbl>
+ 1 10113           0       11           0
+ 2 10113         272        1           0
+ 3 10113         320        1           0
+ 4 10183          57        1           0
+ 5 10190           0        2           0
+ 6 10201           0        1          21
+ 7 10201           4        3           0
+ 8 10201          14        1           0
+ 9 10201          15        6           0
+10 10201          71        4           5
+# … with 3,618 more rows
+
+star_wars %>%
+ count(part_num, color_id, wt=quantity)
+# A tibble: 2,413 × 3
+   part_num color_id     n
+   <chr>       <dbl> <dbl>
+ 1 10169           4     1
+ 2 10197           0     2
+ 3 10197          72     3
+ 4 10201           0    21
+ 5 10201          71     5
+ 6 10247           0     9
+ 7 10247          71    16
+ 8 10247          72    12
+ 9 10884          28     1
+10 10928          72     6
+# … with 2,403 more rows
+parts_joined %>%
+  # Sort the number of star wars pieces in descending order 
+  arrange(desc(n_star_wars)) %>%
+  # Join the colors table to the parts_joined table
+  inner_join(colors, by=c("color_id"="id")) %>%
+  # Join the parts table to the previous join 
+  inner_join(parts, by="part_num", suffix=c("_color","_part"))
+  # A tibble: 3,628 × 8
+   part_num color_id n_batman n_star_wars name_color rgb   name_part part_cat_id
+   <chr>       <dbl>    <dbl>       <dbl> <chr>      <chr> <chr>           <dbl>
+ 1 2780            0      104         392 Black      #051… Technic …          53
+ 2 32062           0        1         141 Black      #051… Technic …          46
+ 3 4274            1       56         118 Blue       #005… Technic …          53
+ 4 6141           36       11         117 Trans-Red  #C91… Plate Ro…          21
+ 5 3023           71       10         106 Light Blu… #A0A… Plate 1 …          14
+ 6 6558            1       30         106 Blue       #005… Technic …          53
+ 7 43093           1       44          99 Blue       #005… Technic …          53
+ 8 3022           72       14          95 Dark Blui… #6C6… Plate 2 …          14
+ 9 2357           19        0          84 Tan        #E4C… Brick 2 …          11
+10 6141          179       90          81 Flat Silv… #898… Plate Ro…          21
+# … with 3,618 more rows
+# Filter the batwing set for parts that are also in the batmobile set
+batwing %>%
+  semi_join(batmobile, by="part_num")
+
+# Filter the batwing set for parts that aren't in the batmobile set
+batwing %>%
+ anti_join(batmobile, by="part_num")
+# A tibble: 126 × 3
+   part_num color_id quantity
+   <chr>       <dbl>    <dbl>
+ 1 3023            0       22
+ 2 3024            0       22
+ 3 3623            0       20
+ 4 2780            0       17
+ 5 3666            0       16
+ 6 3710            0       14
+ 7 6141            4       12
+ 8 2412b          71       10
+ 9 6141           72       10
+10 6558            1        9
+# … with 116 more rows
+# Filter the batwing set for parts that aren't in the batmobile set
+batwing %>%
+ anti_join(batmobile, by="part_num")
+# A tibble: 183 × 3
+   part_num color_id quantity
+   <chr>       <dbl>    <dbl>
+ 1 11477           0       18
+ 2 99207          71       18
+ 3 22385           0       14
+ 4 99563           0       13
+ 5 10247          72       12
+ 6 2877           72       12
+ 7 61409          72       12
+ 8 11153           0       10
+ 9 98138          46       10
+10 2419           72        9
+# … with 173 more rows
+# Use inventory_parts to find colors included in at least one set
+colors %>%
+  semi_join(inventory_parts, by=c("id"="color_id"))
+# A tibble: 134 × 3
+      id name           rgb    
+   <dbl> <chr>          <chr>  
+ 1    -1 [Unknown]      #0033B2
+ 2     0 Black          #05131D
+ 3     1 Blue           #0055BF
+ 4     2 Green          #237841
+ 5     3 Dark Turquoise #008F9B
+ 6     4 Red            #C91A09
+ 7     5 Dark Pink      #C870A0
+ 8     6 Brown          #583927
+ 9     7 Light Gray     #9BA19D
+10     8 Dark Gray      #6D6E5C
+# … with 124 more rows
+# Use filter() to extract version 1 
+version_1_inventories <- inventories %>%
+  filter(version==1)
+
+# Use anti_join() to find which set is missing a version 1
+sets %>%
+  anti_join(version_1_inventories, by="set_num")
+# A tibble: 1 × 4
+  set_num name       year theme_id
+  <chr>   <chr>     <dbl>    <dbl>
+1 40198-1 Ludo game  2018      598
+batman_colors <- inventory_parts_themes %>%
+  # Filter the inventory_parts_themes table for the Batman theme
+  filter(name_theme =="Batman") %>%
+  group_by(color_id) %>%
+  summarize(total = sum(quantity)) %>%
+  # Add a fraction column of the total divided by the sum of the total 
+  mutate(fraction=total/sum(total))
+
+# Filter and aggregate the Star Wars set data; add a fraction column
+star_wars_colors <- inventory_parts_themes %>%
+  filter(name_theme =="Star Wars") %>%
+  group_by(color_id) %>%
+  summarize(total = sum(quantity)) %>%
+  mutate(fraction=total/sum(total))
+batman_colors %>%
+  full_join(star_wars_colors, by = "color_id", suffix = c("_batman", "_star_wars")) %>%
+  replace_na(list(total_batman = 0, total_star_wars = 0)) %>%
+  inner_join(colors, by = c("color_id" = "id")) %>%
+  # Create the difference and total columns
+  mutate(difference = (fraction_batman-fraction_star_wars),
+         total = (total_batman+total_star_wars) )%>%
+  # Filter for totals greater than 200
+  filter(total>=200)
+# A tibble: 16 × 9
+   color_id total_batman fraction_batman total_star_wars fraction_star_wa… name 
+      <dbl>        <dbl>           <dbl>           <dbl>             <dbl> <chr>
+ 1        0         2807         0.296              3258           0.207   Black
+ 2        1          243         0.0256              410           0.0261  Blue 
+ 3        4          529         0.0558              434           0.0276  Red  
+ 4       14          426         0.0449              207           0.0132  Yell…
+ 5       15          404         0.0426             1771           0.113   White
+ 6       19          142         0.0150             1012           0.0644  Tan  
+ 7       28           98         0.0103              183           0.0116  Dark…
+ 8       36           86         0.00907             246           0.0156  Tran…
+ 9       46          200         0.0211               39           0.00248 Tran…
+10       70          297         0.0313              373           0.0237  Redd…
+11       71         1148         0.121              3264           0.208   Ligh…
+12       72         1453         0.153              2433           0.155   Dark…
+13       84          278         0.0293               31           0.00197 Medi…
+14      179          154         0.0162              232           0.0148  Flat…
+15      378           22         0.00232             430           0.0273  Sand…
+16        7            0        NA                   209           0.0133  Ligh…
+# … with 3 more variables: rgb <chr>, difference <dbl>, total <dbl>
+# Create a bar plot using colors_joined and the name and difference columns
+ggplot(colors_joined, aes(name, difference, fill = name)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_manual(values = color_palette, guide = "none") +
+  labs(y = "Difference: Batman - Star Wars")

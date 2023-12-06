@@ -17,3 +17,23 @@ sets %>%
  9 700.3-1 Medium Gift …  1949      365 24197       1 bslot02a       15        6
 10 700.3-1 Medium Gift …  1949      365 24197       1 bslot02a        2        6
 # … with 258,948 more rows
+# Count the number of colors and sort
+sets %>%
+  inner_join(inventories, by = "set_num") %>%
+  inner_join(inventory_parts, by = c("id" = "inventory_id")) %>%
+  inner_join(colors, by = c("color_id" = "id"), suffix = c("_set", "_color")) %>%
+  count(name_color, sort=TRUE)
+# A tibble: 134 × 2
+   name_color            n
+   <chr>             <int>
+ 1 Black             48068
+ 2 White             30105
+ 3 Light Bluish Gray 26024
+ 4 Red               21602
+ 5 Dark Bluish Gray  19948
+ 6 Yellow            17088
+ 7 Blue              12980
+ 8 Light Gray         8632
+ 9 Reddish Brown      6960
+10 Tan                6664
+# … with 124 more rows

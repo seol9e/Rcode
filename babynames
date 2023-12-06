@@ -21,3 +21,11 @@ babynames %>%
   # Find the most common name in each year
   group_by(year)%>%
   slice_max(number, n=1)
+selected_names <- babynames %>%
+  # Filter for the names Steven, Thomas, and Matthew 
+  filter(name %in% c("Steven", "Thomas", "Matthew"))
+
+# Plot the names using a different color for each name
+ggplot(selected_names, aes(x = year, y = number, color = name)) +
+  geom_line()
+

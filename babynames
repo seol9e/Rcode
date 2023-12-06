@@ -1,0 +1,23 @@
+babynames %>%
+  # Filter for the year 1990
+  filter(year==1990)%>%
+    # Sort the number column in descending order 
+  arrange(desc(number))
+# A tibble: 21,223 × 3
+    year name        number
+   <dbl> <chr>        <int>
+ 1  1990 Michael      65560
+ 2  1990 Christopher  52520
+ 3  1990 Jessica      46615
+ 4  1990 Ashley       45797
+ 5  1990 Matthew      44925
+ 6  1990 Joshua       43382
+ 7  1990 Brittany     36650
+ 8  1990 Amanda       34504
+ 9  1990 Daniel       33963
+10  1990 David        33862
+# … with 21,213 more rows
+babynames %>%
+  # Find the most common name in each year
+  group_by(year)%>%
+  slice_max(number, n=1)

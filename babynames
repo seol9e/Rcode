@@ -28,4 +28,27 @@ selected_names <- babynames %>%
 # Plot the names using a different color for each name
 ggplot(selected_names, aes(x = year, y = number, color = name)) +
   geom_line()
-
+# Calculate the fraction of people born each year with the same name
+babynames %>%
+  group_by(year) %>%
+  mutate(year_total = sum(number)) %>%
+  ungroup() %>%
+  mutate(fraction = number / year_total) %>%
+  # Find the year each name is most common
+  group_by(name) %>%
+  slice_max(fraction, n = 1)
+# A tibble: 48,040 × 5
+# Groups:   name [48,040]
+    year name     number year_total   fraction
+   <dbl> <chr>     <int>      <int>      <dbl>
+ 1  2015 Aaban        15    3648781 0.00000411
+ 2  2015 Aadam        22    3648781 0.00000603
+ 3  2010 Aadan        11    3672066 0.00000300
+ 4  2015 Aadarsh      15    3648781 0.00000411
+ 5  2010 Aaden       450    3672066 0.000123  
+ 6  2015 Aadhav       31    3648781 0.00000850
+ 7  2015 Aadhavan      5    3648781 0.00000137
+ 8  2015 Aadhya      265    3648781 0.0000726 
+ 9  2010 Aadi         54    3672066 0.0000147 
+10  2005 Aadil        20    3828460 0.00000522
+# … with 48,030 more rows

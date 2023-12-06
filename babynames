@@ -75,3 +75,10 @@ ungroup()%>%
  9  1880 Abner       27       1552      199     0.136   
 10  1880 Abraham     81      17882     2449     0.0331  
 # … with 332,585 more rows
+names_filtered <- names_normalized %>%
+  # Filter for the names Steven, Thomas, and Matthew
+  filter(name %in% c("Steven","Thomas","Matthew"))
+# Visualize the names in names_filtered over time
+ggplot(names_filtered, aes(x = year, y = fraction_max, color = name)) +
+  geom_line()
+

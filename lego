@@ -37,3 +37,89 @@ sets %>%
  9 Reddish Brown      6960
 10 Tan                6664
 # … with 124 more rows
+# Combine the star_destroyer and millennium_falcon tables
+millennium_falcon %>%
+  left_join(star_destroyer, by=c("part_num","color_id"), suffix = c("_falcon","_star_destroyer"))
+# A tibble: 263 × 6
+   set_num_falcon part_num color_id quantity_falcon set_num_star_destroyer
+   <chr>          <chr>       <dbl>           <dbl> <chr>                 
+ 1 7965-1         63868          71              62 <NA>                  
+ 2 7965-1         3023            0              60 <NA>                  
+ 3 7965-1         3021           72              46 75190-1               
+ 4 7965-1         2780            0              37 75190-1               
+ 5 7965-1         60478          72              36 <NA>                  
+ 6 7965-1         6636           71              34 75190-1               
+ 7 7965-1         3009           71              28 75190-1               
+ 8 7965-1         3665           71              22 <NA>                  
+ 9 7965-1         2412b          72              20 75190-1               
+10 7965-1         3010           71              19 <NA>                  
+# … with 253 more rows, and 1 more variable: quantity_star_destroyer <dbl
+# Aggregate Millennium Falcon for the total quantity in each part
+millennium_falcon_colors <- millennium_falcon %>%
+  group_by(color_id) %>%
+  summarize(total_quantity = sum(quantity))
+
+# Aggregate Star Destroyer for the total quantity in each part
+star_destroyer_colors <- star_destroyer %>%
+  group_by(color_id) %>%
+  summarize(total_quantity = sum(quantity))
+
+# Left join the Millennium Falcon colors to the Star Destroyer colors
+millennium_falcon_colors %>%
+  left_join(star_destroyer_colors, by=c("color_id"), suffix=c("_falcon","_star_destroyer"))
+# A tibble: 21 × 3
+   color_id total_quantity_falcon total_quantity_star_destroyer
+      <dbl>                 <dbl>                         <dbl>
+ 1        0                   201                           336
+ 2        1                    15                            23
+ 3        4                    17                            53
+ 4       14                     3                             4
+ 5       15                    15                            17
+ 6       19                    95                            12
+ 7       28                     3                            16
+ 8       33                     5                            NA
+ 9       36                     1                            14
+10       41                     6                            15
+# … with 11 more rows
+inventory_version_1 <- inventories %>%
+  filter(version == 1)
+
+# Join versions to sets
+sets %>%
+  left_join(inventory_version_1, by=c("set_num")) %>%
+  # Filter for where version is na
+  filter(is.na(version))
+# A tibble: 1 × 6
+  set_num name       year theme_id    id version
+  <chr>   <chr>     <dbl>    <dbl> <dbl>   <dbl>
+1 40198-1 Ludo game  2018      598    NA      NA
+
+parts %>%
+  count(part_cat_id) %>%
+  right_join(part_categories, by = c("part_cat_id" = "id")) %>%
+  # Filter for NA
+  filter(is.na(n))
+# A tibble: 1 × 3
+  part_cat_id     n name   
+        <dbl> <int> <chr>  
+1          66    NA Modulex
+parts %>%
+  count(part_cat_id) %>%
+  right_join(part_categories, by = c("part_cat_id" = "id")) %>%
+  # Use replace_na to replace missing values in the n column
+  replace_na(list(n=0))
+# A tibble: 64 × 3
+   part_cat_id     n name                   
+         <dbl> <dbl> <chr>                  
+ 1           1   135 Baseplates             
+ 2           3   303 Bricks Sloped          
+ 3           4  1900 Duplo, Quatro and Primo
+ 4           5   107 Bricks Special         
+ 5           6   128 Bricks Wedged          
+ 6           7    97 Containers             
+ 7           8    24 Technic Bricks         
+ 8           9   167 Plates Special         
+ 9          11   490 Bricks                 
+10          12    85 Technic Connectors     
+# … with 54 more rows
+

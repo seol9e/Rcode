@@ -1,0 +1,19 @@
+sets %>%
+  # Add inventories using an inner join 
+  inner_join(inventories, by= c("set_num")) %>%
+  # Add inventory_parts using an inner join 
+  inner_join(inventory_parts, by= c("id"="inventory_id"))
+# A tibble: 258,958 × 9
+   set_num name           year theme_id    id version part_num color_id quantity
+   <chr>   <chr>         <dbl>    <dbl> <dbl>   <dbl> <chr>       <dbl>    <dbl>
+ 1 700.3-1 Medium Gift …  1949      365 24197       1 bdoor01         2        2
+ 2 700.3-1 Medium Gift …  1949      365 24197       1 bdoor01        15        1
+ 3 700.3-1 Medium Gift …  1949      365 24197       1 bdoor01         4        1
+ 4 700.3-1 Medium Gift …  1949      365 24197       1 bslot02        15        6
+ 5 700.3-1 Medium Gift …  1949      365 24197       1 bslot02         2        6
+ 6 700.3-1 Medium Gift …  1949      365 24197       1 bslot02         4        6
+ 7 700.3-1 Medium Gift …  1949      365 24197       1 bslot02         1        6
+ 8 700.3-1 Medium Gift …  1949      365 24197       1 bslot02        14        6
+ 9 700.3-1 Medium Gift …  1949      365 24197       1 bslot02a       15        6
+10 700.3-1 Medium Gift …  1949      365 24197       1 bslot02a        2        6
+# … with 258,948 more rows

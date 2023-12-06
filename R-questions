@@ -1,0 +1,78 @@
+# Replace the NAs in the tag_name column
+questions %>%
+  left_join(question_tags, by = c("id" = "question_id")) %>%
+  left_join(tags, by = c("tag_id" = "id")) %>%
+  replace_na(list(tag_name="only-r"))
+# A tibble: 545,694 × 5
+         id creation_date score tag_id tag_name       
+      <int> <date>        <int>  <dbl> <chr>          
+ 1 22557677 2014-03-21        1     18 regex          
+ 2 22557677 2014-03-21        1    139 string         
+ 3 22557677 2014-03-21        1  16088 time-complexity
+ 4 22557677 2014-03-21        1   1672 backreference  
+ 5 22557707 2014-03-21        2     NA only-r         
+ 6 22558084 2014-03-21        2   6419 time-series    
+ 7 22558084 2014-03-21        2  92764 panel-data     
+ 8 22558395 2014-03-21        2   5569 function       
+ 9 22558395 2014-03-21        2    134 sorting        
+10 22558395 2014-03-21        2   9412 vectorization  
+# … with 545,684 more rows
+questions_with_tags %>% 
+  # Group by tag_name
+  group_by(tag_name) %>%
+  # Get mean score and num_questions
+  summarize(score = mean(score),
+        	num_questions = n()) %>%
+  # Sort num_questions in descending order
+  arrange(desc(num_questions))
+# A tibble: 7,841 × 3
+   tag_name   score num_questions
+   <chr>      <dbl>         <int>
+ 1 only-r     1.26          48541
+ 2 ggplot2    2.61          28228
+ 3 dataframe  2.31          18874
+ 4 shiny      1.45          14219
+ 5 dplyr      1.95          14039
+ 6 plot       2.24          11315
+ 7 data.table 2.97           8809
+ 8 matrix     1.66           6205
+ 9 loops      0.743          5149
+10 regex      2              4912
+# … with 7,831 more rows
+
+# Using a join, filter for tags that are never on an R question
+tags %>%
+  anti_join(question_tags, by=c("id"="tag_id"))
+# A tibble: 40,459 × 2
+       id tag_name                 
+    <dbl> <chr>                    
+ 1 124399 laravel-dusk             
+ 2 124402 spring-cloud-vault-config
+ 3 124404 spring-vault             
+ 4 124405 apache-bahir             
+ 5 124407 astc                     
+ 6 124408 simulacrum               
+ 7 124410 angulartics2             
+ 8 124411 django-rest-viewsets     
+ 9 124414 react-native-lightbox    
+10 124417 java-module              
+# … with 40,449 more rows
+questions %>%
+  # Inner join questions and answers with proper suffixes
+  inner_join(answers, by=c("id"="question_id"), suffix = c("_question","_answer"))%>%
+  # Subtract creation_date_question from creation_date_answer to create gap
+  mutate(gap = as.integer(creation_date_question-creation_date_answer))
+# A tibble: 380,643 × 7
+         id creation_date_question score_question id_answer creation_date_answer
+      <int> <date>                          <int>     <int> <date>              
+ 1 22557677 2014-03-21                          1  22560670 2014-03-21          
+ 2 22557707 2014-03-21                          2  22558516 2014-03-21          
+ 3 22557707 2014-03-21                          2  22558726 2014-03-21          
+ 4 22558084 2014-03-21                          2  22558085 2014-03-21          
+ 5 22558084 2014-03-21                          2  22606545 2014-03-24          
+ 6 22558084 2014-03-21                          2  22610396 2014-03-24          
+ 7 22558084 2014-03-21                          2  34374729 2015-12-19          
+ 8 22558395 2014-03-21                          2  22559327 2014-03-21          
+ 9 22558395 2014-03-21                          2  22560102 2014-03-21          
+10 22558395 2014-03-21                          2  22560288 2014-03-21          
+# … with 380,633 more rows, and 2 more variables: score_answer <int>, gap <int>

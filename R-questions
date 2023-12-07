@@ -76,3 +76,120 @@ questions %>%
  9 22558395 2014-03-21                          2  22560102 2014-03-21          
 10 22558395 2014-03-21                          2  22560288 2014-03-21          
 # … with 380,633 more rows, and 2 more variables: score_answer <int>, gap <int>
+# Count and sort the question id column in the answers table
+answer_counts <- answers %>%
+  count(question_id, sort=TRUE)
+
+# Combine the answer_counts and questions tables
+questions %>%
+  left_join(answer_counts, by=c("id"="question_id")) %>%
+  # Replace the NAs in the n column
+  replace_na(list(n=0))
+# A tibble: 294,735 × 4
+         id creation_date score     n
+      <int> <date>        <int> <dbl>
+ 1 22557677 2014-03-21        1     1
+ 2 22557707 2014-03-21        2     2
+ 3 22558084 2014-03-21        2     4
+ 4 22558395 2014-03-21        2     3
+ 5 22558613 2014-03-21        0     1
+ 6 22558677 2014-03-21        2     2
+ 7 22558887 2014-03-21        8     1
+ 8 22559180 2014-03-21        1     1
+ 9 22559312 2014-03-21        0     1
+10 22559322 2014-03-21        2     5
+# … with 294,725 more rows
+question_answer_counts %>%
+  # Join the question_tags tables
+  inner_join(question_tags, by=c("id"="question_id")) %>%
+  # Join the tags table
+  inner_join(tags, by=c("tag_id"="id"))
+# A tibble: 497,153 × 6
+         id creation_date score     n tag_id tag_name           
+      <int> <date>        <int> <dbl>  <dbl> <chr>              
+ 1 22557677 2014-03-21        1     1     18 regex              
+ 2 22557677 2014-03-21        1     1    139 string             
+ 3 22557677 2014-03-21        1     1  16088 time-complexity    
+ 4 22557677 2014-03-21        1     1   1672 backreference      
+ 5 22558084 2014-03-21        2     4   6419 time-series        
+ 6 22558084 2014-03-21        2     4  92764 panel-data         
+ 7 22558395 2014-03-21        2     3   5569 function           
+ 8 22558395 2014-03-21        2     3    134 sorting            
+ 9 22558395 2014-03-21        2     3   9412 vectorization      
+10 22558395 2014-03-21        2     3  18621 operator-precedence
+# … with 497,143 more rows
+tagged_answers %>%
+  # Aggregate by tag_name
+  group_by(tag_name) %>%
+  # Summarize questions and average_answers
+  summarize(questions = n(),
+            average_answers = mean(n)) %>%
+  # Sort the questions in descending order
+  arrange(desc(questions))
+# A tibble: 7,840 × 3
+   tag_name   questions average_answers
+   <chr>          <int>           <dbl>
+ 1 ggplot2        28228           1.15 
+ 2 dataframe      18874           1.67 
+ 3 shiny          14219           0.921
+ 4 dplyr          14039           1.55 
+ 5 plot           11315           1.23 
+ 6 data.table      8809           1.47 
+ 7 matrix          6205           1.45 
+ 8 loops           5149           1.39 
+ 9 regex           4912           1.91 
+10 function        4892           1.30 
+# … with 7,830 more rows
+# Inner join the question_tags and tags tables with the questions table
+questions %>%
+  inner_join(question_tags, by =c("id"="question_id") ) %>%
+  inner_join(tags, by = c("tag_id"="id"))
+
+# Inner join the question_tags and tags tables with the answers table
+answers %>%
+ inner_join(question_tags, by="question_id")%>%
+  inner_join(tags,c("tag_id"="id" ))
+# A tibble: 625,845 × 6
+         id creation_date question_id score tag_id tag_name   
+      <int> <date>              <int> <int>  <dbl> <chr>      
+ 1 39143935 2016-08-25       39142481     0   4240 average    
+ 2 39143935 2016-08-25       39142481     0   5571 summary    
+ 3 39144014 2016-08-25       39024390     0  85748 shiny      
+ 4 39144014 2016-08-25       39024390     0  83308 r-markdown 
+ 5 39144014 2016-08-25       39024390     0 116736 htmlwidgets
+ 6 39144252 2016-08-25       39096741     6  67746 rstudio    
+ 7 39144375 2016-08-25       39143885     5 105113 data.table 
+ 8 39144430 2016-08-25       39144077     0    276 variables  
+ 9 39144625 2016-08-25       39142728     1  46457 dataframe  
+10 39144625 2016-08-25       39142728     1   9047 subset     
+# … with 625,835 more rows
+# Combine the two tables into posts_with_tags
+posts_with_tags <- bind_rows(questions_with_tags %>% mutate(type = "question"),
+                              answers_with_tags %>% mutate(type = "answer"))
+
+# Add a year column, then count by type, year, and tag_name
+posts_with_tags %>%
+  mutate(year=year(creation_date))%>%
+  count(type, year, tag_name)
+# A tibble: 58,299 × 4
+   type    year tag_name                      n
+   <chr>  <dbl> <chr>                     <int>
+ 1 answer  2008 bayesian                      1
+ 2 answer  2008 dataframe                     3
+ 3 answer  2008 dirichlet                     1
+ 4 answer  2008 eof                           1
+ 5 answer  2008 file                          1
+ 6 answer  2008 file-io                       1
+ 7 answer  2008 function                      7
+ 8 answer  2008 global-variables              7
+ 9 answer  2008 math                          2
+10 answer  2008 mathematical-optimization     1
+# … with 58,289 more rows
+# Filter for the dplyr and ggplot2 tag names 
+by_type_year_tag_filtered <- by_type_year_tag %>%
+  filter(tag_name %in% c("dplyr","ggplot2"))
+
+# Create a line plot faceted by the tag name 
+ggplot(by_type_year_tag_filtered, aes(year, n, color = type)) +
+  geom_line() +
+  facet_wrap(~ tag_name)

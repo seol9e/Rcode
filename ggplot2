@@ -29,3 +29,19 @@ ggplot(mtcars, aes(wt, mpg, fill = fcyl)) +
 ggplot(mtcars, aes(wt, mpg, color = fcyl)) +
   # Add points layer with shape 24 and color yellow
   geom_point(shape=24, color="yellow")
+palette <- c(automatic = "#377EB8", manual = "#E41A1C")
+
+# Set the position
+ggplot(mtcars, aes(fcyl, fill = fam)) +
+  geom_bar(position="dodge") +
+  labs(x = "Number of Cylinders", y = "Count")
+  scale_fill_manual("Transmission", values = palette)
+ggplot(mtcars, aes(mpg, 0)) +
+  geom_jitter() +
+  # Set the y-axis limits
+  ylim(-2,2)
+# Plot price vs. carat, colored by clarity
+plt_price_vs_carat_by_clarity <- ggplot(diamonds, aes(carat, price, color = clarity))
+
+# Set transparency to 0.5
+plt_price_vs_carat_by_clarity + geom_point(alpha = 0.5, shape = ".")

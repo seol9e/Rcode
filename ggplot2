@@ -115,7 +115,19 @@ plt_prop_unemployed_over_time +
       size = 0.5,
       linetype = "dotted"
     ),
+
     # Set the axis text color to grey25
     axis.text=element_text(color="grey25"),
     # Set the plot title font face to italic and font size to 16
    plot.title=element_text(size=16, face="italic")
+
+plt_mpg_vs_wt_by_cyl +
+  theme(
+    # Set the plot margin to (10, 30, 50, 70) millimeters
+    plot.margin=margin(10,30,50,70, "mm")
+  )# Add a classic theme
+plt_prop_unemployed_over_time +
+  theme_classic()
+# Add a void theme
+plt_prop_unemployed_over_time +
+  theme_void()

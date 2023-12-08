@@ -59,3 +59,6 @@ plt_mpg_vs_fcyl_by_fam + geom_point()
 
 # Now jitter and dodge the point positions
 plt_mpg_vs_fcyl_by_fam + geom_point(position= position_jitterdodge(jitter.width=0.3, dodge.width=0.3))
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  # Use a jitter position function with width 0.1
+  geom_point(alpha = 0.5, position=position_jitter(width=0.1))

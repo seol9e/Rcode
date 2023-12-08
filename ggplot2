@@ -1,0 +1,31 @@
+# Load the ggplot2 package
+library(ggplot2)
+
+# Explore the mtcars data frame with str()
+str(mtcars)
+
+# Execute the following command
+ggplot(mtcars, aes(cyl, mpg)) +
+  geom_point()
+# Load the ggplot2 package
+library(ggplot2)
+
+# Change the command below so that cyl is treated as factor
+ggplot(mtcars, aes(factor(cyl), mpg)) +
+  geom_point()
+# Change the color aesthetic to a size aesthetic
+ggplot(mtcars, aes(wt, mpg, color = disp, size=disp)) +
+  geom_point()
+# Map color to fam
+ggplot(mtcars, aes(wt, mpg, fill = fcyl, color=fam)) +
+  geom_point(shape = 21, size = 4, alpha = 0.6)
+# A hexadecimal color
+my_blue <- "#4ABEFF"
+
+# Change the color mapping to a fill mapping
+ggplot(mtcars, aes(wt, mpg, fill = fcyl)) +
+  # Set point size and shape
+  geom_point(color=my_blue, size=10, shape=1)
+ggplot(mtcars, aes(wt, mpg, color = fcyl)) +
+  # Add points layer with shape 24 and color yellow
+  geom_point(shape=24, color="yellow")

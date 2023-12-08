@@ -70,3 +70,6 @@ ggplot(mtcars, aes(mpg, ..density..)) +
 ggplot(mtcars, aes(mpg, fill = fam)) +
   # Change the position to identity, with transparency 0.4
   geom_histogram(binwidth = 1, position = "identity", alpha=0.4)
+ggplot(mtcars, aes(fcyl, fill = fam)) +
+  # Change the position to "dodge"
+  geom_bar(position = "dodge")

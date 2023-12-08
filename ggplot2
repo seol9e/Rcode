@@ -73,3 +73,30 @@ ggplot(mtcars, aes(mpg, fill = fam)) +
 ggplot(mtcars, aes(fcyl, fill = fam)) +
   # Change the position to "dodge"
   geom_bar(position = "dodge")
+ggplot(mtcars, aes(cyl, fill = fam)) +
+  # Set the transparency to 0.6
+  geom_bar(position = position_dodge(width = 0.2), alpha=0.6)
+# Plot education, filled by vocabulary
+ggplot(Vocab, aes(education, fill = vocabulary)) +
+  # Add a bar layer with position "fill"
+  geom_bar(position = "fill") +
+  # Add a brewer fill scale with default palette
+  scale_fill_brewer()
+# Change the y-axis to the proportion of the population that is unemployed
+ggplot(economics, aes(date, unemploy/pop)) +
+  geom_line()
+# Plot the Rainbow Salmon time series
+ggplot(fish.species, aes(x = Year, y = Rainbow)) +
+  geom_line()
+
+# Plot the Pink Salmon time series
+ggplot(fish.species, aes(x = Year, y = Pink)) +
+  geom_line()
+
+# Plot multiple time-series by grouping by species
+ggplot(fish.tidy, aes(Year, Capture)) +
+  geom_line(aes(group = Species))
+
+# Plot multiple time-series by coloring by species
+ggplot(fish.tidy, aes(x = Year, y = Capture, color = Species)) +
+  geom_line()

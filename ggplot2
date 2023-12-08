@@ -62,3 +62,11 @@ plt_mpg_vs_fcyl_by_fam + geom_point(position= position_jitterdodge(jitter.width=
 ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
   # Use a jitter position function with width 0.1
   geom_point(alpha = 0.5, position=position_jitter(width=0.1))
+datacamp_light_blue <- "#51A8C9"
+
+ggplot(mtcars, aes(mpg, ..density..)) +
+  # Set the fill color to datacamp_light_blue
+  geom_histogram(binwidth = 1, fill=datacamp_light_blue)
+ggplot(mtcars, aes(mpg, fill = fam)) +
+  # Change the position to identity, with transparency 0.4
+  geom_histogram(binwidth = 1, position = "identity", alpha=0.4)

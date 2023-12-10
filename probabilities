@@ -1,0 +1,42 @@
+# Count the deals for each product
+amir_deals %>%
+  count(product)
+# Calculate probability of picking a deal with each product
+amir_deals %>%
+  count(product) %>%
+  mutate(prob = n/sum(n))
+# Set random seed to 31
+set.seed(31)
+
+# Sample 5 deals with replacement
+amir_deals %>%
+  sample_n(5, rep=TRUE)
+# Create probability distribution
+size_distribution <- restaurant_groups %>%
+  count(group_size) %>%
+  mutate(probability = n / sum(n))
+
+# Calculate probability of picking group of 4 or more
+size_distribution %>%
+  # Filter for groups of 4 or larger
+  filter(group_size >=4) %>%
+  # Calculate prob_4_or_more by taking sum of probabilities
+  summarize(prob_4_or_more = sum(probability))
+# Set random seed to 334
+set.seed(334)
+
+# Generate 1000 wait times between 0 and 30 mins, save in time column
+wait_times %>%
+  mutate(time = runif(1000, min = 0, max = 30)) %>%
+  # Create a histogram of simulated times
+ ggplot(aes(x = time)) +
+  geom_histogram(bins = 30)
+# Probability of closing > 1 deal out of 3 deals
+pbinom(1,3,0.3)
+[1] 0.784
+# Probability of closing > 1 deal out of 3 deals
+pbinom(1,3,0.3, lower.tail=TRUE)
+[1] 0.784
+# Probability of closing > 1 deal out of 3 deals
+pbinom(1,3,0.3, lower.tail=FALSE)
+[1] 0.216

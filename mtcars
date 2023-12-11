@@ -18,3 +18,19 @@ ggplot(mtcars,aes(wt,mpg))+geom_point()
 ggplot(mtcars, aes(x = wt, y = mpg)) +
   geom_point() +
   stat_smooth(method = "lm", se = FALSE)
+# Amend the plot to add another smooth layer with dummy grouping
+ggplot(mtcars, aes(x = wt, y = mpg, color = fcyl)) +
+  geom_point() +
+  stat_smooth(method = "lm", se = FALSE)+stat_smooth(aes(group=1),method="lm",se=FALSE)
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point() +
+  # Add 3 smooth LOESS stats, varying span & color
+  stat_smooth(color = "red", span = 0.9, se = FALSE) +
+  stat_smooth(color = "green", span = 0.6, se = FALSE) +
+  stat_smooth(color = "blue", span = 0.3, se = FALSE)
+# Amend the plot
+ggplot(mtcars, aes(x = wt, y = mpg, color = fcyl)) +
+  geom_point() +
+  # Map color to dummy variable "All"
+  stat_smooth(se = FALSE) +
+  stat_smooth(method = "lm", se = FALSE)

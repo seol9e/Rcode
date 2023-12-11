@@ -41,3 +41,13 @@ ggplot(mtcars, aes(x = wt, y = mpg, color = fcyl)) +
   stat_smooth(aes(color="All"),se = FALSE) +
   stat_smooth(method = "lm", se = FALSE)
 
+# Amend the plot
+ggplot(Vocab, aes(x = education, y = vocabulary, color = year_group)) +
+  geom_jitter(alpha = 0.25) +
+  # Map the fill color to year_group, set the line size to 2
+  stat_smooth(method = "lm")
+# Amend the plot
+ggplot(Vocab, aes(x = education, y = vocabulary, color = year_group)) +
+  geom_jitter(alpha = 0.25) +
+  # Map the fill color to year_group, set the line size to 2
+  stat_smooth(aes(fill=year_group),method = "lm",size=2)

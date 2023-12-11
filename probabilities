@@ -58,3 +58,14 @@ pnorm(7000, mean = 5000, sd = 2000)-pnorm(3000, mean = 5000, sd = 2000)
 [1] 0.6826895
 # Calculate amount that 75% of deals will be more than
 qnorm(0.75, mean = 5000, sd = 2000, lower.tail = FALSE)
+# Calculate new average amount
+new_mean <-5000*1.20
+# Calculate new standard deviation
+new_sd <-2000*1.30
+
+# Simulate 36 sales
+new_sales <- new_sales %>% 
+  mutate(amount = rnorm(36,new_mean,new_sd))
+
+# Create histogram with 10 bins
+ggplot(new_sales, aes(amount))+geom_histogram

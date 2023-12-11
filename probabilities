@@ -95,3 +95,5 @@ mean(sample_means)
 
 # Calculate mean of num_users in amir_deals
 mean(amir_deals$num_users)
+# Probability of 5 responses
+dpois(5,4,1)

@@ -100,6 +100,10 @@ dpois(5,4,1)
 # Probability of 5 responses from coworker
 dpois(5,5.5,1)
 [1] -1.763751
+# Probability of > 10 responses
+ppois(10,4,lower.tail=FALSE)
+[1] 0.002839766
+
 # Probability of 2 or fewer responses
 ppois(2,4,lower.tail=FALSE)
 [1] 0.7618967

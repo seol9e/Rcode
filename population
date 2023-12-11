@@ -226,3 +226,10 @@ counties %>%
 #   transit <dbl>, walk <dbl>, other_transp <dbl>, work_at_home <dbl>,
 #   mean_commute <dbl>, employed <dbl>, private_work <dbl>, …
 
+# Add a linear trendline to scatterplot
+ggplot(world_happiness, aes(life_exp, happiness_score)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+# Correlation between life_exp and happiness_score
+cor(world_happiness$life_exp,world_happiness$happiness_score)

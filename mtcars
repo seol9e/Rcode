@@ -34,3 +34,10 @@ ggplot(mtcars, aes(x = wt, y = mpg, color = fcyl)) +
   # Map color to dummy variable "All"
   stat_smooth(se = FALSE) +
   stat_smooth(method = "lm", se = FALSE)
+# Amend the plot
+ggplot(mtcars, aes(x = wt, y = mpg, color = fcyl)) +
+  geom_point() +
+  # Map color to dummy variable "All"
+  stat_smooth(aes(color="All"),se = FALSE) +
+  stat_smooth(method = "lm", se = FALSE)
+

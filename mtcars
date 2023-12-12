@@ -68,3 +68,10 @@ posn_jd <- position_jitterdodge(jitter.width = 0.2, dodge.width = 0.1)
 p_wt_vs_fcyl_by_fam <- ggplot(mtcars, aes(fcyl,wt,color=fam))
 # Add a point layer
 p_wt_vs_fcyl_by_fam + geom_point()
+
+# Add dodging only
+p_wt_vs_fcyl_by_fam +
+geom_point(position=posn_d)
+# Add jittering and dodging
+p_wt_vs_fcyl_by_fam +
+  geom_point(position=posn_jd)

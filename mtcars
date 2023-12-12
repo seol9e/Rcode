@@ -89,3 +89,19 @@ ggplot(mtcars, aes(x = wt, y = hp, color = fam)) +
   geom_smooth() +
   # Add Cartesian coordinates with x limits from 3 to 6
   coord_cartesian(xlim=(c(3,6)))
+
+ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_jitter() +
+  geom_smooth(method = "lm", se = FALSE) +
+  # Fix the coordinate ratio
+  coord_fixed()
+# Change the aspect ratio to 20:1
+sun_plot +
+  coord_fixed(ratio=20)
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point(size = 2) +
+  # Turn clipping off
+  coord_cartesian(expand = 0, clip="off") +
+  theme_classic() +
+  # Remove axis lines
+  theme(axis.line=element_blank())

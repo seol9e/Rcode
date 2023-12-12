@@ -55,3 +55,16 @@ ggplot(Vocab, aes(x = education, y = vocabulary, color = year_group)) +
 ggplot(Vocab, aes(x = education, y = vocabulary,color=year_group)) +
   geom_jitter(alpha = 0.25) +
   stat_quantile(quantiles = c(0.05, 0.5, 0.95))
+ggplot(Vocab, aes(x = education, y = vocabulary)) +
+  stat_sum() +
+  # Add a size scale, from 1 to 10
+  scale_size(range=c(1,10))
+# From previous step
+posn_j <- position_jitter(width = 0.2)
+posn_d <- position_dodge(width = 0.1)
+posn_jd <- position_jitterdodge(jitter.width = 0.2, dodge.width = 0.1)
+
+# Create the plot base: wt vs. fcyl, colored by fam
+p_wt_vs_fcyl_by_fam <- ggplot(mtcars, aes(fcyl,wt,color=fam))
+# Add a point layer
+p_wt_vs_fcyl_by_fam + geom_point()

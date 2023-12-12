@@ -84,3 +84,8 @@ p_wt_vs_fcyl_by_fam_jit +
 p_wt_vs_fcyl_by_fam_jit +
   # Add a summary stat of normal confidence limits
   stat_summary(fun.data = mean_cl_normal, fun.args = list(mult = 1), position = posn_d,geom="errorbar")
+ggplot(mtcars, aes(x = wt, y = hp, color = fam)) +
+  geom_point() +
+  geom_smooth() +
+  # Add Cartesian coordinates with x limits from 3 to 6
+  coord_cartesian(xlim=(c(3,6)))

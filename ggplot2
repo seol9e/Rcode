@@ -215,3 +215,7 @@ ggplot(msleep, aes(bodywt, brainwt)) +
   scale_x_log10() +
   scale_y_log10() +
   ggtitle("Scale_ functions")
+# Perform a log10 coordinate system transformation
+ggplot(msleep, aes(bodywt, brainwt)) +
+  geom_point() +
+  coord_trans(x="log10",y="log10")

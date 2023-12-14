@@ -106,3 +106,11 @@ ggplot(mtcars, aes(x = 1, fill = fcyl)) +
 ggplot(wind, aes(wd, fill = ws)) +
   geom_bar(width = 1) +
   coord_polar(start =-pi/16)
+ggplot(mtcars, aes(wt, mpg)) + 
+  geom_point() +
+  # Facet rows by am
+  facet_grid(rows=vars(am))
+ggplot(mtcars, aes(wt, mpg)) + 
+  geom_point() +
+  # Facet columns by cyl
+  facet_grid(cols=vars(cyl))

@@ -234,3 +234,16 @@ ggplot(msleep, aes(bodywt, brainwt)) +
   geom_smooth(method = "lm", se = FALSE) +
   # Add a log10 coordinate transformation for x and y axes
   coord_trans(x="log10", y="log10")
+# Define breaks (Fahrenheit)
+y_breaks <- c(59, 68, 77, 86, 95, 104)
+# Convert y_breaks from Fahrenheit to Celsius
+y_labels <- (y_breaks-32)*(5/9)
+# Create a secondary x-axis
+secondary_y_axis <- sec_axis(
+  # Use identity transformation
+  trans = identity,
+  name = "Celsius",
+  # Define breaks and labels as above
+  breaks = y_breaks,
+  labels = y_labels
+)

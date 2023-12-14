@@ -256,3 +256,8 @@ ggplot(mtcars, aes(fcyl, fill = fam)) +
   geom_bar(position = "dodge") +
   # Flip the x and y coordinates
   coord_flip()
+
+ggplot(mtcars, aes(fcyl, fill = fam)) +
+  # Set a dodge width of 0.5 for partially overlapping bars
+  geom_bar(position = position_dodge(0.5)) +
+  coord_flip()

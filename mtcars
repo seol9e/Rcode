@@ -102,3 +102,7 @@ ggplot(mtcars, aes(x = 1, fill = fcyl)) +
   coord_polar(theta = "y") +
   # Add a continuous x scale from 0.5 to 1.5
   scale_x_continuous( limits=c(0.5,1.5))
+# Convert to polar coordinates:
+ggplot(wind, aes(wd, fill = ws)) +
+  geom_bar(width = 1) +
+  coord_polar(start =-pi/16)

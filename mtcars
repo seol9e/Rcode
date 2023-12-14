@@ -90,5 +90,9 @@ ggplot(mtcars, aes(x = wt, y = hp, color = fam)) +
   # Add Cartesian coordinates with x limits from 3 to 6
   coord_cartesian(xlim=(c(3,6)))
 
-
+# Flip the axes to set car to the y axis
+ggplot(mtcars, aes(car, wt)) +
+  geom_point() +
+  labs(x = "car", y = "weight") +
+  coord_flip()
 

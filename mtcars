@@ -136,3 +136,8 @@ ggplot(mtcars, aes(wt, mpg)) +
   geom_point() +
   # Facet rows by am and columns by cyl using formula notation
   facet_grid(am ~ cyl)
+# Plot wt by mpg
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  # Two variables
+  facet_grid(cols = vars(vs, cyl), labeller = label_context)

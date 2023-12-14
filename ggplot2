@@ -250,3 +250,9 @@ ggplot(airquality, aes(Date, Temp)) +
   # Add the secondary y-axis 
   scale_y_continuous(sec.axis=secondary_y_axis ) +
   labs(x = "Date (1973)", y = "Fahrenheit")
+
+
+ggplot(mtcars, aes(fcyl, fill = fam)) +
+  geom_bar(position = "dodge") +
+  # Flip the x and y coordinates
+  coord_flip()

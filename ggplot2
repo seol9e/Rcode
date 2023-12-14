@@ -208,3 +208,10 @@ plt_country_vs_lifeExp +
     arrow = arrow(length = unit(0.2, "cm"), type = "closed"),
     color = "grey40"
   )
+
+# Add scale_*_*() functions
+ggplot(msleep, aes(bodywt, brainwt)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  ggtitle("Scale_ functions")

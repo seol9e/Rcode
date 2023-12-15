@@ -218,3 +218,29 @@ ggplot(barley, aes(x = year, y = variety, fill = yield)) +
   facet_wrap(facets = vars(site), ncol = 1) +
   # Update scale to use n-colors from red_brewer_palette
   scale_fill_gradientn(colors=red_brewer_palette)
+# Using barely, plot yield vs. year, colored, grouped, and filled by site
+ggplot(barley, aes(x = year, y = yield, color = site, group =site, fill = site)) +
+  # Add a line summary stat aggregated by mean
+  stat_summary(fun = mean, geom = "line") +
+  # Add a ribbon summary stat with 10% opacity, no color
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "ribbon", alpha = 0.1, color = NA)
+
+# Change type
+TG$dose <- as.numeric(as.character(TG$dose))
+
+# Plot
+growth_by_dose <- ggplot(TG, aes(dose, len, color = supp)) +
+  stat_summary(fun.data = mean_sdl,
+               fun.args = list(mult = 1),
+               position = position_dodge(0.2)) +
+  stat_summary(fun = mean,
+               geom = "line",
+               position = position_dodge(0.1)) +
+  theme_classic() +
+  # Adjust labels and colors:
+  labs(x = "Dose (mg/day)", y = "Odontoblasts length (mean, standard deviation)", color = "Supplement") +
+  scale_color_brewer(palette = "Set1", labels = c("Orange juice", "Ascorbic acid")) +
+  scale_y_continuous(limits = c(0,35), breaks = seq(0, 35, 5), expand = c(0,0))
+
+# View plot
+growth_by_dose

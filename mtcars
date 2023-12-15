@@ -167,3 +167,13 @@ ggplot(mtcars, aes(x = mpg, y = car, color = fam)) +
   geom_point() +
   # Free the y scales and space
   facet_grid(rows = vars(gear), scales="free_y", space="free_y")
+ggplot(Vocab, aes(x = education, y = vocabulary)) +
+  stat_smooth(method = "lm", se = FALSE) +
+  # Create facets, wrapping by year, using a formula
+  facet_wrap(~ year)
+`geom_smooth()` using formula 'y ~ x'
+ggplot(Vocab, aes(x = education, y = vocabulary)) +
+  stat_smooth(method = "lm", se = FALSE) +
+  # Update the facet layout, using 11 columns
+  facet_wrap(~ year, ncol=11)
+`geom_smooth()` using formula 'y ~ x'

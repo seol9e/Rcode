@@ -162,3 +162,8 @@ ggplot(mtcars, aes(wt, mpg)) +
   geom_point() + 
   # Swap cols for rows; free the y-axis scales
   facet_grid(rows = vars(cyl), scales = "free_y")
+
+ggplot(mtcars, aes(x = mpg, y = car, color = fam)) +
+  geom_point() +
+  # Free the y scales and space
+  facet_grid(rows = vars(gear), scales="free_y", space="free_y")

@@ -164,3 +164,15 @@ sfo_survey %>%
 2  982   LUFTHANSA            MUNICH       Hub
 3 2063    AMERICAN      PHILADELPHIA   Large  
 4  777 UNITED INTL SAN JOSE DEL CABO   Small  
+
+# Remove bad dest_size rows
+sfo_survey %>% 
+  # Join with dest_sizes
+  semi_join(dest_sizes,by="dest_size")%>%
+  # Count the number of each dest_size
+  count(dest_size)
+  dest_size    n
+1       Hub 1756
+2     Large  143
+3    Medium  681
+4     Small  225

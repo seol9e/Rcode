@@ -215,3 +215,19 @@ sfo_survey %>%
 # Count values of cleanliness_lower
 sfo_survey %>%
   count(cleanliness_lower)
+# Count categories of dest_region
+sfo_survey %>%
+  count(dest_region)
+             dest_region   n
+1                   Asia 260
+2  Australia/New Zealand  66
+3          Canada/Mexico 220
+4  Central/South America  29
+5                East US 498
+6                     EU   2
+7                    eur   2
+8                  Europ   1
+9                 Europe 396
+10           Middle East  79
+11            Midwest US 281
+12               West US 975

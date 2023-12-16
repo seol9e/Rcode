@@ -245,3 +245,7 @@ sfo_survey %>%
                                      Europe = europe_categories)) %>%
   # Count categories of dest_region_collapsed
   count(dest_region_collapsed)
+
+# Filter for rows with "(" or ")" in the phone column
+sfo_survey %>%
+  filter(str_detect(phone, fixed("(")) | str_detect(phone, fixed(")")))

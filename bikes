@@ -149,3 +149,18 @@ bike_share_rides %>%
 # … with 35,219 more rows, 1 more variable: duration_min_avg <dbl>, and
 #   abbreviated variable names ¹​station_A_id, ²​station_A_name, ³​station_B_id,
 #   ⁴​station_B_name, ⁵​user_gender, ⁶​user_birth_year
+
+
+>
+glimpse(sfo_survey)
+# Find bad dest_size rows
+sfo_survey %>% 
+  # Join with dest_sizes data frame to get bad dest_size rows
+  anti_join(dest_sizes, by="dest_size") %>%
+  # Select id, airline, destination, and dest_size cols
+  select(id,airline,destination,dest_size)
+    id     airline       destination dest_size
+1  278      UNITED         BALTIMORE      huge
+2  982   LUFTHANSA            MUNICH       Hub
+3 2063    AMERICAN      PHILADELPHIA   Large  
+4  777 UNITED INTL SAN JOSE DEL CABO   Small  

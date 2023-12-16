@@ -350,3 +350,8 @@ zagat %>%
   stringdist_left_join(cities, by = c("city" = "city_actual")) %>%
   # Select the name, city, and city_actual cols
   select(name,city, city_actual)
+# Load reclin
+library(reclin)
+
+# Generate pairs with same city
+pair_blocking(zagat, fodors, blocking_var="city")

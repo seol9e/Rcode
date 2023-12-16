@@ -122,3 +122,30 @@ bike_share_rides_unique %>%
   count(ride_id) %>%
   # Filter for rows with a count > 1
   filter(n>1)
+
+bike_share_rides %>%
+  # Group by ride_id and date
+  group_by(ride_id,date) %>%
+  # Add duration_min_avg column
+  mutate(duration_min_avg = mean(duration_min) ) %>%
+  # Remove duplicates based on ride_id and date, keep all cols
+  distinct(ride_id,date,.keep_all=TRUE) %>%
+  # Remove duration_min column
+  select(-duration_min)
+# A tibble: 35,229 × 10
+# Groups:   ride_id, date [35,229]
+   ride_id date       station_…¹ stati…² stati…³ stati…⁴ bike_id user_…⁵ user_…⁶
+     <int> <date>     <fct>      <chr>   <fct>   <chr>   <fct>   <fct>     <dbl>
+ 1   52797 2017-04-15 67         San Fr… 89      Divisi… 1974    Male       1972
+ 2   54540 2017-04-19 21         Montgo… 64      5th St… 860     Male       1986
+ 3   87695 2017-04-14 16         Steuar… 355     23rd S… 2263    Male       1993
+ 4   45619 2017-04-03 58         Market… 368     Myrtle… 1417    Male       1981
+ 5   70832 2017-04-10 16         Steuar… 81      Berry … 507     Male       1981
+ 6   96135 2017-04-18 6          The Em… 66      3rd St… 75      Male       1988
+ 7   29928 2017-04-22 5          Powell… 350     8th St… 388     Male       1993
+ 8   83331 2017-04-11 16         Steuar… 91      Berry … 239     Male       1996
+ 9   72424 2017-04-05 5          Powell… 62      Victor… 1449    Male       1993
+10   25910 2017-04-20 81         Berry … 81      Berry … 3289    Male       1996
+# … with 35,219 more rows, 1 more variable: duration_min_avg <dbl>, and
+#   abbreviated variable names ¹​station_A_id, ²​station_A_name, ³​station_B_id,
+#   ⁴​station_B_name, ⁵​user_gender, ⁶​user_birth_year

@@ -12,3 +12,20 @@ str(x_date)
 
 # Store April 10 2014 as a Date
 april_10_2014 <- as.Date("2014-04-10")
+# Remove rows with invalid numbers
+sfo_survey %>%
+  filter(str_length(phone)!=12)
+# Check out the accounts data frame
+head(accounts)
+
+# Define the date formats
+formats <- c("%Y-%m-%d", "%B %d, %Y")
+
+# Convert dates to the same format
+accounts %>%
+  mutate(date_opened_clean = parse_date_time(date_opened,formats))
+# Scatter plot of opening date and total amount
+accounts %>%
+  ggplot(aes(x = date_opened, y = total)) +
+  geom_point()
+

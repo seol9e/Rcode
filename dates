@@ -300,3 +300,16 @@ difftime(mar_13, mar_12, units = "secs")
 
 # Difference between mar_12 and mar_11 in seconds
 difftime(mar_12, mar_11, units = "secs")
+# Add a period of one week to mon_2pm
+mon_2pm <- dmy_hm("27 Aug 2018 14:00")
+mon_2pm + days(7)
+
+# Add a duration of 81 hours to tue_9am
+tue_9am <- dmy_hm("28 Aug 2018 9:00")
+tue_9am + dhours(81)
+
+# Subtract a period of five years from today()
+today() - years(5)
+
+# Subtract a duration of five years from today()
+today() - dyears(5)

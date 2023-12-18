@@ -381,3 +381,43 @@ monarchs %>%
  9 Constantine II     1356912000 Scotland      
 10 David II           1316304000 Scotland      
 # ... with 121 more rows
+# Print halleys
+halleys
+# A tibble: 27 x 6
+   designation     year perihelion_date start_date end_date  distance
+   <chr>          <int> <date>          <date>     <date>    <chr>   
+ 1 1P/66 B1, 66      66 66-01-26        66-01-25   66-01-26  <NA>    
+ 2 1P/141 F1, 141   141 141-03-25       141-03-22  141-03-25 <NA>    
+ 3 1P/218 H1, 218   218 218-04-06       218-04-06  218-05-17 <NA>    
+ 4 1P/295 J1, 295   295 295-04-07       295-04-07  295-04-20 <NA>    
+ 5 1P/374 E1, 374   374 374-02-13       374-02-13  374-02-16 0.09 AU 
+ 6 1P/451 L1, 451   451 451-07-03       451-06-28  451-07-03 <NA>    
+ 7 1P/530 Q1, 530   530 530-11-15       530-09-27  530-11-15 <NA>    
+ 8 1P/607 H1, 607   607 607-03-26       607-03-15  607-03-26 0.09 AU 
+ 9 1P/684 R1, 684   684 684-11-26       684-10-02  684-11-26 <NA>    
+10 1P/760 K1, 760   760 760-06-10       760-05-20  760-06-10 <NA>    
+# ... with 17 more rows
+# New column for interval from start to end date
+halleys <- halleys %>% 
+  mutate(visible = start_date %--% end_date)
+# The visitation of 1066
+halleys_1066 <- halleys[14, ] 
+# Monarchs in power on perihelion date
+monarchs %>% 
+  filter(halleys_1066$perihelion_date %within% reign) %>%
+  select(name, from, to, dominion)
+# A tibble: 2 x 4
+  name        from                to                  dominion
+  <chr>       <dttm>              <dttm>              <chr>   
+1 Harold II   1066-01-05 00:00:00 1066-10-14 00:00:00 England 
+2 Malcolm III 1058-03-17 00:00:00 1093-11-13 00:00:00 Scotland
+# Monarchs whose reign overlaps visible time
+monarchs %>% 
+  filter(int_overlaps(halleys_1066$visible,reign)) %>%
+  select(name, from, to, dominion)
+# A tibble: 3 x 4
+  name                 from                to                  dominion
+  <chr>                <dttm>              <dttm>              <chr>   
+1 Edward the Confessor 1042-06-08 00:00:00 1066-01-05 00:00:00 England 
+2 Harold II            1066-01-05 00:00:00 1066-10-14 00:00:00 England 
+3 Malcolm III          1058-03-17 00:00:00 1093-11-13 00:00:00 Scotland

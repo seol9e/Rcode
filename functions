@@ -40,3 +40,11 @@ toss_coin <- function() {
 # Call your function
 toss_coin()
 [1] "head"
+# Update the function to return n coin tosses
+toss_coin <- function(n_flips) {
+  coin_sides <- c("head", "tail")
+  sample(coin_sides, n_flips,replace=TRUE)
+}
+
+# Generate 10 coin tosses
+toss_coin(10)

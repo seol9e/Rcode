@@ -421,3 +421,12 @@ monarchs %>%
 1 Edward the Confessor 1042-06-08 00:00:00 1066-01-05 00:00:00 England 
 2 Harold II            1066-01-05 00:00:00 1066-10-14 00:00:00 England 
 3 Malcolm III          1058-03-17 00:00:00 1093-11-13 00:00:00 Scotland
+# New columns for duration and period
+monarchs <- monarchs %>%
+  mutate(
+    duration = as.duration(reign),
+    period = as.period(reign)) 
+    
+# Examine results    
+monarchs %>%
+  select(name,duration, period)

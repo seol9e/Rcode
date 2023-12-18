@@ -517,3 +517,30 @@ microbenchmark(
   fast_strptime = fast_strptime(dates, 
     format = "%Y-%m-%dT%H:%M:%SZ"),
   times = 20)
+# Print date_stamp
+date_stamp
+function (x, locale = "C") 
+{
+    {
+        old_lc_time <- Sys.getlocale("LC_TIME")
+        if (old_lc_time != locale) {
+            on.exit(Sys.setlocale("LC_TIME", old_lc_time))
+            Sys.setlocale("LC_TIME", locale)
+        }
+    }
+    format(x, format = "%A, %b %d, %Y")
+}
+<environment: 0xcc6c7b0>
+# Call date_stamp on today()
+date_stamp(today())
+[1] "Monday, Dec 18, 2023"
+# Create and call a stamp based on "12/31/1999"
+stamp("12/31/1999")(today())
+Multiple formats matched: "%Om/%d/%Y"(1), "%m/%d/%Y"(1)
+Using: "%Om/%d/%Y"
+[1] "12/18/2023"
+# Use string finished for stamp()
+stamp(finished)(today())
+Multiple formats matched: "I finished 'Dates and Times in R' on %A, %B %d, %Y!"(1), "I finished 'Dates and Times in R' on Thursday, September %Om, %Y!"(1), "I finished 'Dates and Times in R' on Thursday, %Om %d, %Y!"(1), "I finished 'Dates and Times in R' on Thursday, %B %d, %Y!"(1), "I finished 'Dates and Times in R' on Thursday, September %m, %Y!"(1), "I finished 'Dates and Times in R' on %A, September %Om, %Y!"(0), "I finished 'Dates and Times in R' on %A, %Om %d, %Y!"(0), "I finished 'Dates and Times in R' on %A, September %m, %Y!"(0)
+Using: "I finished 'Dates and Times in R' on %A, %B %d, %Y!"
+[1] "I finished 'Dates and Times in R' on Monday, December 18, 2023!"

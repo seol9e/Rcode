@@ -58,3 +58,9 @@ toss_coin <- function(n_flips,p_head) {
 toss_coin(10,0.8)
 # Generate 10 coin tosses
 toss_coin(10)
+# Write a function to run a Poisson regression
+run_poisson_regression<-function(data,formula){
+glm(formula = formula, family = poisson, 
+    data = data)
+
+}

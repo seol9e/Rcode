@@ -343,3 +343,41 @@ jan_31%m+%month_seq
 
 # Replace + with %m-%
 jan_31%m-% month_seq
+# Print monarchs
+ print(monarchs)
+# A tibble: 131 x 4
+   name                     from                to                  dominion    
+   <chr>                    <dttm>              <dttm>              <chr>       
+ 1 Elizabeth II             1952-02-06 00:00:00 2023-12-18 00:00:00 United King~
+ 2 Victoria                 1837-06-20 00:00:00 1901-01-22 00:00:00 United King~
+ 3 George V                 1910-05-06 00:00:00 1936-01-20 00:00:00 United King~
+ 4 George III               1801-01-01 00:00:00 1820-01-29 00:00:00 United King~
+ 5 George VI                1936-12-11 00:00:00 1952-02-06 00:00:00 United King~
+ 6 George IV                1820-01-29 00:00:00 1830-06-26 00:00:00 United King~
+ 7 Edward VII               1901-01-22 00:00:00 1910-05-06 00:00:00 United King~
+ 8 William IV               1830-06-26 00:00:00 1837-06-20 00:00:00 United King~
+ 9 Edward VIII              1936-01-20 00:00:00 1936-12-11 00:00:00 United King~
+10 George III(also United ~ 1760-10-25 00:00:00 1801-01-01 00:00:00 Great Brita~
+# ... with 121 more rows
+# Create an interval for reign
+monarchs <- monarchs %>%
+  mutate( reign= from%--% to) 
+# Find the length of reign, and arrange
+monarchs %>%
+  mutate(length = int_length(reign)) %>% 
+  arrange(desc(length)) %>%
+  select(name, length, dominion)
+# A tibble: 131 x 3
+   name                   length dominion      
+   <chr>                   <dbl> <chr>         
+ 1 Elizabeth II       2267827200 United Kingdom
+ 2 Victoria           2006726400 United Kingdom
+ 3 James VI           1820102400 Scotland      
+ 4 Gruffudd ap Cynan  1767139200 Gwynedd       
+ 5 Edward III         1590624000 England       
+ 6 William I          1545868800 Scotland      
+ 7 Llywelyn the Great 1428796800 Gwynedd       
+ 8 Elizabeth I        1399507200 England       
+ 9 Constantine II     1356912000 Scotland      
+10 David II           1316304000 Scotland      
+# ... with 121 more rows

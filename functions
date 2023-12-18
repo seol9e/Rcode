@@ -11,3 +11,32 @@ args(rank)
 
 # Rewrite this function call, following best practices
 rank(-gold_medals,na.last="keep", ties.method="min")
+
+# Your script, from a previous step
+coin_sides <- c("head", "tail")
+sample(coin_sides, 1)
+[1] "tail"
+# Paste your script into the function body
+toss_coin <- function() {
+ coin_sides <- c("head", "tail")
+sample(coin_sides, 1)
+}
+# Your functions, from previous steps
+toss_coin <- function() {
+  coin_sides <- c("head", "tail")
+  sample(coin_sides, 1)
+}
+# Call your function
+toss_coin
+function() {
+  coin_sides <- c("head", "tail")
+  sample(coin_sides, 1)
+}
+# Your functions, from previous steps
+toss_coin <- function() {
+  coin_sides <- c("head", "tail")
+  sample(coin_sides, 1)
+}
+# Call your function
+toss_coin()
+[1] "head"

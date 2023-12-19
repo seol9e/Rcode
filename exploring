@@ -52,3 +52,11 @@ ggplot(comics, aes(x = align)) +
 ggplot(comics, aes(x = align)) + 
   geom_bar() +
   facet_wrap(~ gender)
+# Put levels of flavor in descending order
+lev <- c("apple", "key lime", "boston creme", "blueberry", "cherry", "pumpkin", "strawberry")
+pies$flavor <- factor(pies$flavor, levels = lev)
+
+# Create bar chart of flavor
+ggplot(pies, aes(x = flavor)) + 
+  geom_bar(fill = "chartreuse") + 
+  theme(axis.text.x = element_text(angle = 90))

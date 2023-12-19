@@ -269,3 +269,11 @@ exists("population", envir = rsa_env)
 
 # Does population exist in rsa_env, ignoring inheritance?
 exists("population", envir = rsa_env, inherits=FALSE)
+# Write a function to convert yards to meters
+yards_to_meters<-function(yards){
+    yards*(36*0.0254)
+}
+# Write a function to convert sq. meters to hectares
+sq_meters_to_hectares<-function(sq_meters){
+    sq_meters/10000
+}

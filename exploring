@@ -48,3 +48,7 @@ comics$align <- factor(comics$align,
 # Create plot of align
 ggplot(comics, aes(x = align)) + 
   geom_bar()
+# Plot of alignment broken down by gender
+ggplot(comics, aes(x = align)) + 
+  geom_bar() +
+  facet_wrap(~ gender)

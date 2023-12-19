@@ -248,3 +248,15 @@ plt_dist_vs_speed <- cars %>%
 
 # Examine the structure of the result
 str(plt_dist_vs_speed)
+# From previous steps
+rsa_lst <- list(
+  capitals = capitals,
+  national_parks = national_parks,
+  population = population
+)
+rsa_env <- list2env(rsa_lst)
+
+# Find the parent environment of rsa_env
+parent <- parent.env(rsa_env)
+# Print its name
+environmentName(parent)

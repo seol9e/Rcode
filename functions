@@ -277,3 +277,15 @@ yards_to_meters<-function(yards){
 sq_meters_to_hectares<-function(sq_meters){
     sq_meters/10000
 }
+# Load the functions from the previous steps
+load_step3()
+
+# Define a harmonic acres to hectares function
+harmonic_acres_to_hectares <- function(acres) {
+  acres %>% 
+    # Get the reciprocal
+    get_reciprocal() %>%
+    # Convert acres to hectares
+    acres_to_hectares()%>% 
+    # Get the reciprocal again
+    get_reciprocal()

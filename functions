@@ -338,3 +338,8 @@ run_gam_yield_vs_year_by_region<-function(data){
 
 # Try it on the wheat dataset
 run_gam_yield_vs_year_by_region(wheat)
+# Predict the yield
+pred_yield_kg_per_ha <- predict(corn_model, predict_this, type = "response")
+predict_this %>%
+  # Add the prediction as a column of predict_this 
+  mutate(pred_yield_kg_per_ha = pred_yield_kg_per_ha)

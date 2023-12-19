@@ -189,3 +189,21 @@ calc_harmonic_mean <- function(x, na.rm = FALSE) {
 
 # See what happens when you pass it malformed na.rm
 calc_harmonic_mean(std_and_poor500$pe_ratio, na.rm = 1:5)
+
+is_leap_year <- function(year) {
+  # If year is div. by 400 return TRUE
+  if(year %% 400 == 0) {
+    return(TRUE)
+  }
+  # If year is div. by 100 return FALSE
+  if(year %% 100 == 0) {
+    return(FALSE)
+  }  
+  # If year is div. by 4 return TRUE
+ if(year %% 4 == 0) {
+   return(TRUE)
+ } 
+  
+  # Otherwise return FALSE
+  FALSE
+}

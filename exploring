@@ -227,3 +227,5 @@ email %>%
   mutate(has_image=image>0) %>%
   ggplot(aes(x = has_image,fill = spam)) +
   geom_bar(position = "fill")
+# Test if images count as attachments
+sum(email$image >  email$attach)

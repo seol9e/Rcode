@@ -93,3 +93,21 @@ cars %>%
   geom_histogram() +
   xlim(c(90, 550)) +
   ggtitle("horsepwr")
+# Create hist of horsepwr with binwidth of 3
+cars %>%
+  ggplot(aes(horsepwr)) +
+  geom_histogram(binwidth = 3) +
+  ggtitle("horsepwr")
+
+# Create hist of horsepwr with binwidth of 30
+
+cars %>%
+  ggplot(aes(horsepwr)) +
+  geom_histogram(binwidth = 30) +
+  ggtitle("horsepwr")
+# Create hist of horsepwr with binwidth of 60
+
+cars %>%
+  ggplot(aes(horsepwr)) +
+  geom_histogram(binwidth = 60) +
+  ggtitle("horsepwr")

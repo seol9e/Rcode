@@ -222,3 +222,8 @@ summarize(IQR(exclaim_mess),median(exclaim_mess))
 email%>%
 mutate(log_exclaim_mess=log(exclaim_mess+0.01))%>%
 ggplot( aes(x=spam,y=log_exclaim_mess))+geom_density()
+# Create plot of proportion of spam by image
+email %>%
+  mutate(has_image=image>0) %>%
+  ggplot(aes(x = has_image,fill = spam)) +
+  geom_bar(position = "fill")

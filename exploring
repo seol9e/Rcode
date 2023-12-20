@@ -186,3 +186,13 @@ gap2007 <- gap2007 %>%
 gap2007 %>%
   ggplot(aes(x =log_pop )) +
 geom_density()
+# Filter for Asia, add column indicating outliers
+gap_asia <- gap2007 %>%
+  filter(continent=="Asia") %>%
+  mutate(is_outlier = ifelse(lifeExp<50, TRUE, FALSE))
+
+# Remove outliers, create box plot of lifeExp
+gap_asia %>%
+  filter(is_outlier==FALSE) %>%
+  ggplot(aes(x =1 , y = lifeExp)) +
+  geom_boxplot()

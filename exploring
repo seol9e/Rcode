@@ -196,3 +196,18 @@ gap_asia %>%
   filter(is_outlier==FALSE) %>%
   ggplot(aes(x =1 , y = lifeExp)) +
   geom_boxplot()
+# Load packages
+library(ggplot2)
+library(dplyr)
+library(openintro)
+
+# Compute summary statistics
+email %>%
+  group_by(spam) %>%
+  summarize(median(num_char),IQR(num_char))
+
+# Create plot
+email %>%
+  mutate(log_num_char = log(num_char)) %>%
+  ggplot(aes(x =spam , y = log_num_char)) +
+  geom_boxplot()

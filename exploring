@@ -211,3 +211,14 @@ email %>%
   mutate(log_num_char = log(num_char)) %>%
   ggplot(aes(x =spam , y = log_num_char)) +
   geom_boxplot()
+# Compute center and spread for exclaim_mess by spam
+email%>%
+group_by(spam)%>%
+summarize(IQR(exclaim_mess),median(exclaim_mess))
+
+
+
+# Create plot for spam and exclaim_mess
+email%>%
+mutate(log_exclaim_mess=log(exclaim_mess+0.01))%>%
+ggplot( aes(x=spam,y=log_exclaim_mess))+geom_density()

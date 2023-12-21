@@ -58,3 +58,5 @@ explanatory_data %>%
 
 # Compare to the results from predict()
 predict(mdl_price_vs_conv, explanatory_data)
+# Get the model-level elements of the model
+glance(mdl_price_vs_conv)

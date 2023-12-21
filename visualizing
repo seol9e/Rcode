@@ -60,3 +60,13 @@ explanatory_data %>%
 predict(mdl_price_vs_conv, explanatory_data)
 # Get the model-level elements of the model
 glance(mdl_price_vs_conv)
+# Using sp500_yearly_returns, plot return_2019 vs. return_2018
+ggplot(sp500_yearly_returns, aes(return_2018,return_2019)) +
+  # Make it a scatter plot
+  geom_point() +
+  # Add a line at y = x, colored green, size 1
+  geom_abline(size=1, color="green")+
+  # Add a linear regression trend line, no std. error ribbon
+  geom_smooth(method="lm", se=FALSE) +
+  # Fix the coordinate ratio
+  coord_fixed()

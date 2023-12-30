@@ -286,3 +286,26 @@ ggplot(ad_conversion, aes(n_impressions ^ 0.25, n_clicks ^ 0.25)) +
 glance(mdl_click_vs_impression_orig) %>% 
   # Pull out r.squared
   pull(r.squared)
+
+script.R
+1
+R Console
+Slides
+Notes
+>
+summary(mdl_click_vs_impression_orig)
+# Get RSE for mdl_click_vs_impression_orig
+mdl_click_vs_impression_orig %>% 
+  # Get the model-level details
+  glance() %>% 
+  # Pull out sigma
+  pull(sigma)
+[1] 19.90584
+# Do the same for the transformed model
+# Get RSE for mdl_click_vs_impression_orig
+mdl_click_vs_impression_trans%>% 
+  # Get the model-level details
+  glance() %>% 
+  # Pull out sigma
+  pull(sigma)
+[1] 0.1969064

@@ -311,3 +311,10 @@ mdl_click_vs_impression_trans%>%
 [1] 0.1969064
 # Plot the three diagnostics for mdl_price_vs_conv
 autoplot(mdl_price_vs_conv, which=1:3,nrow=3, ncol=1)
+mdl_price_vs_dist %>% 
+  # Augment the model
+  augment() %>% 
+  # Arrange rows by descending leverage
+  arrange(desc(.hat))%>% 
+  # Get the head of the dataset
+  head()

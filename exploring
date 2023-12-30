@@ -282,3 +282,7 @@ ggplot(ad_conversion, aes(n_impressions ^ 0.25, n_clicks ^ 0.25)) +
   geom_smooth(method = "lm", se = FALSE) +
   # Add points from prediction_data, colored green
   geom_point(data=prediction_data,color="green")
+
+glance(mdl_click_vs_impression_orig) %>% 
+  # Pull out r.squared
+  pull(r.squared)

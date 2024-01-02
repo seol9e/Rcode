@@ -327,3 +327,9 @@ mdl_price_vs_dist %>%
   head()
 # Plot the three outlier diagnostics for mdl_price_vs_dist
 autoplot(mdl_price_vs_dist,which=4:6,nrow=3,ncol=1)
+# Using churn, plot time_since_last_purchase
+ggplot(churn, aes(time_since_last_purchase)) +
+  # as a histogram with binwidth 0.25
+  geom_histogram(binwidth=0.25) +
+  # faceted in a grid with has_churned on each row
+  facet_grid(rows=vars(has_churned))

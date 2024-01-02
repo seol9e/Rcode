@@ -339,3 +339,8 @@ ggplot(churn, aes(time_since_first_purchase)) +
   geom_histogram(binwidth=0.25) +
   # faceted in a grid with has_churned on each row
   facet_grid(rows=vars(has_churned))
+ggplot(churn, aes(time_since_first_purchase, has_churned)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  # Add a glm trend line, no std error ribbon, binomial family
+  geom_smooth(method="glm", se=FALSE, method.args=list(family=binomial))

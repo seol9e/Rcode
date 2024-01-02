@@ -347,9 +347,9 @@ ggplot(churn, aes(time_since_first_purchase, has_churned)) +
 # Fit a logistic regression of churn vs. length of relationship using the churn dataset
 mdl_churn_vs_relationship <- glm(has_churned~time_since_first_purchase, data=churn, family=binomial)
 
-
-
-
-
 # See the result
 mdl_churn_vs_relationship
+# Update the plot
+plt_churn_vs_relationship +
+  # Add points from prediction_data, colored yellow, size 2
+  geom_point(data=prediction_data,color="yellow",size=2)

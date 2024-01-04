@@ -1,0 +1,18 @@
+
+taiwan_real_estate
+# Fit a linear regr'n of price_twd_msq vs. n_convenience
+mdl_price_vs_conv <- lm(price_twd_msq~n_convenience, data=taiwan_real_estate)
+# See the result
+mdl_price_vs_conv
+
+Call:
+lm(formula = price_twd_msq ~ n_convenience, data = taiwan_real_estate)
+
+Coefficients:
+  (Intercept)  n_convenience  
+       8.2242         0.7981  
+# Fit a linear regr'n of price_twd_msq vs. n_convenience plus house_age_years, no intercept
+mdl_price_vs_both <- lm(price_twd_msq~n_convenience + house_age_years+0, data=taiwan_real_estate)
+
+# See the result
+mdl_price_vs_both
